@@ -24,3 +24,18 @@ func TestBadStringToUint(t *testing.T) {
 		t.Fatal("Ожидалась ошибка")
 	}
 }
+
+func TestUniqID(t *testing.T) {
+	str, err := UniqID(13)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(str) != 13 {
+		t.Fatalf("Длина строки не 13, а %d", len(str))
+	}
+
+	str, err = UniqID(0)
+	if err == nil {
+		t.Fatal("Ожидалась ошибка")
+	}
+}
