@@ -82,7 +82,7 @@ func TestRound(t *testing.T) {
 	}
 
 	for i, v := range testCases {
-		r := round(v.val, v.roundOn, v.places)
+		r := Round(v.val, v.roundOn, v.places)
 		if math.IsNaN(v.res) && math.IsNaN(r) {
 			continue
 		}

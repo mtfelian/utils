@@ -47,7 +47,7 @@ func UniqID(n int) (string, error) {
 	round(2.37, .5, 0) возвращает 2.0
 	round(2.77, .5, 0) возвращает 3.0
 */
-func round(val float64, roundOn float64, places int) float64 {
+func Round(val float64, roundOn float64, places int) float64 {
 	var round float64
 	pow := math.Pow(10, float64(places))
 	digit := pow * val
