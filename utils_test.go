@@ -35,7 +35,7 @@ func TestUniqID(t *testing.T) {
 		t.Fatalf("Длина строки не 13, а %d", len(str))
 	}
 
-	str, err = UniqID(0)
+	_, err = UniqID(0)
 	if err == nil {
 		t.Fatal("Ожидалась ошибка")
 	}
