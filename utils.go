@@ -6,6 +6,7 @@ import (
 	"errors"
 	"math"
 	"strconv"
+	"regexp"
 )
 
 // StringToUint трактует строку s как значение типа uint
@@ -59,4 +60,28 @@ func Round(val float64, roundOn float64, places int) float64 {
 	}
 	res := round / pow
 	return res
+}
+
+// formatPhone форматирует строку с номером телефона в формат "71234567890"
+// Возвращает:
+// Успех: Форматированный номер телефона, nil
+// Ошибка: Исходный номер телефона, ошибка
+func formatPhone(phone string) (string, error) {
+	// форматируем строку с телефоном
+	res := phone
+	reg, err := regexp.Compile(`[\(\).,;#*А-яA-z\s+-]*`)
+	if err != nil {
+		return phone, err
+	}
+	res = reg.ReplaceAllString(phone, "")
+	// длина строки с телефоном в норме должна быть 12 символов если с "+" или 11 символов без оного
+	if len(res) > 11 {
+		return phone, errors.New("Слишком длинный номер телефона")
+	} else if len(res) < 11 {
+		return phone, errors.New("Слишком короткий номер телефона")
+	}
+	if res[:1] == "8" {
+		res = "7" + res[1:len(res)]
+	}
+	return res, nil
 }

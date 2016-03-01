@@ -92,3 +92,30 @@ func TestRound(t *testing.T) {
 		}
 	}
 }
+
+func TestFormatPhone(t *testing.T) {
+	testCases := []struct {
+		input  string
+		output string
+		err    bool
+	}{
+		{"+71234567890", "71234567890", false},
+		{"71234567890", "71234567890", false},
+		{"+7 (861) 12-12-123", "78611212123", false},
+		{"8 (861) 12-12-123", "78611212123", false},
+		{"8611212123", "8611212123", true},
+		{"1234567", "1234567", true},
+	}
+
+	for _, testCase := range testCases {
+		receivedOutput, err := formatPhone(testCase.input)
+		if (err != nil) != testCase.err {
+			t.Fatalf("Неверное состояние ошибки на кортеже %v", testCase)
+		}
+		if receivedOutput != testCase.output {
+			t.Fatalf("Полученные данные (%s) не соответствуют ожидаемым (%s)",
+				receivedOutput, testCase.output)
+		}
+	}
+
+}
