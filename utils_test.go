@@ -108,7 +108,7 @@ func TestFormatPhone(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		receivedOutput, err := formatPhone(testCase.input)
+		receivedOutput, err := FormatPhone(testCase.input)
 		if (err != nil) != testCase.err {
 			t.Fatalf("Неверное состояние ошибки на кортеже %v", testCase)
 		}

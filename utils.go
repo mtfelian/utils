@@ -62,11 +62,11 @@ func Round(val float64, roundOn float64, places int) float64 {
 	return res
 }
 
-// formatPhone форматирует строку с номером телефона в формат "71234567890"
+// FormatPhone форматирует строку с номером телефона в формат "71234567890"
 // Возвращает:
 // Успех: Форматированный номер телефона, nil
 // Ошибка: Исходный номер телефона, ошибка
-func formatPhone(phone string) (string, error) {
+func FormatPhone(phone string) (string, error) {
 	// форматируем строку с телефоном
 	res := phone
 	reg, err := regexp.Compile(`[\(\).,;#*А-яA-z\s+-]*`)
