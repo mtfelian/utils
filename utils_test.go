@@ -2,7 +2,10 @@ package utils
 
 import (
 	"fmt"
+	"io/ioutil"
 	"math"
+	"os"
+	"path/filepath"
 	"testing"
 )
 
@@ -118,4 +121,32 @@ func TestFormatPhone(t *testing.T) {
 		}
 	}
 
+}
+
+func TestFileExists(t *testing.T) {
+	binPath, err := GetSelfPath()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	fileName := filepath.Join(binPath, "test.txt")
+	defer os.Remove(fileName)
+
+	err = ioutil.WriteFile(fileName, []byte("test"), 0660)
+	if err != nil {
+		t.Fatalf("Ошибка записи файла: %v", err)
+	}
+
+	if !FileExists(fileName) {
+		t.Fatal("Но файл существует!")
+	}
+
+	err = os.Remove(fileName)
+	if err != nil {
+		t.Fatalf("Ошибка удаления файла: %v", err)
+	}
+
+	if FileExists(fileName) {
+		t.Fatal("Но файл не существует!")
+	}
 }

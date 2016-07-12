@@ -5,6 +5,8 @@ import (
 	"encoding/base64"
 	"errors"
 	"math"
+	"os"
+	"path/filepath"
 	"regexp"
 	"strconv"
 )
@@ -203,4 +205,15 @@ func RenderFloat(format string, n float64) (string, error) {
 // todo документация
 func RenderInteger(format string, n int64) (string, error) {
 	return RenderFloat(format, float64(n))
+}
+
+// GetSelfPath возвращает путь к исполняемому файлу. Или ошибку
+func GetSelfPath() (string, error) {
+	return filepath.Abs(filepath.Dir(os.Args[0]))
+}
+
+// FileExists возвращает true если файл с путём существует. Иначе false
+func FileExists(path string) bool {
+	_, err := os.Stat(path)
+	return !os.IsNotExist(err)
 }
