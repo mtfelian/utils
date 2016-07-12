@@ -150,3 +150,47 @@ func TestFileExists(t *testing.T) {
 		t.Fatal("Но файл не существует!")
 	}
 }
+
+func TestIsDirFalse(t *testing.T) {
+	binPath, err := GetSelfPath()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	fileName := filepath.Join(binPath, "test.txt")
+	defer os.Remove(fileName)
+
+	err = ioutil.WriteFile(fileName, []byte("test"), 0660)
+	if err != nil {
+		t.Fatalf("Ошибка записи файла: %v", err)
+	}
+
+	isDir, err := IsDir(fileName)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if isDir {
+		t.Fatal("Ожидалось получить isDir false, получили true")
+	}
+}
+
+func TestIsDirTrue(t *testing.T) {
+	binPath, err := GetSelfPath()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	dirName := filepath.Join(binPath, "testDir")
+	defer os.RemoveAll(dirName)
+	if err := os.Mkdir(dirName, 0777); err != nil {
+		t.Fatal(err)
+	}
+
+	isDir, err := IsDir(dirName)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !isDir {
+		t.Fatal("Ожидалось получить isDir true, получили false")
+	}
+}

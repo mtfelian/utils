@@ -217,3 +217,15 @@ func FileExists(path string) bool {
 	_, err := os.Stat(path)
 	return !os.IsNotExist(err)
 }
+
+// IsDir возвращает true если указанный путь является директорией, иначе false
+func IsDir(path string) (bool, error) {
+	if !FileExists(path) {
+		return false, errors.New("Файл не существует")
+	}
+	fi, err := os.Stat(path)
+	if err != nil {
+		return false, err
+	}
+	return fi.IsDir(), nil
+}
