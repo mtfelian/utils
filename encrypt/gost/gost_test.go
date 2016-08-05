@@ -11,6 +11,29 @@ import (
 
 const testDir = "test"
 
+const testPrivateKey = `-----BEGIN PRIVATE KEY-----
+MEUCAQAwHAYGKoUDAgITMBIGByqFAwICIwEGByqFAwICHgEEIgIgTAJW4VqnYtYP
+sPL4CN3b08ZolXU7iYN0CAWPGH7GKvY=
+-----END PRIVATE KEY-----`
+
+const testCertificate = `-----BEGIN CERTIFICATE-----
+MIICtzCCAmQCCQC7UQoWC1zZ6zAKBgYqhQMCAgMFADCB4TELMAkGA1UEBhMCUlUx
+LDAqBgNVBAgMI9Ca0YDQsNGB0L3QvtC00LDRgNGB0LrQuNC5INC60YDQsNC5MRsw
+GQYDVQQHDBLQmtGA0LDRgdC90L7QtNCw0YAxKjAoBgNVBAoMIdCe0J7QniAi0KDQ
+vtCz0LAg0Lgg0LrQvtC/0YvRgtCwIjEYMBYGA1UECwwP0JjQoi3QvtGC0LTQtdC7
+MSowKAYDVQQDDCHQntCe0J4gItCg0L7Qs9CwINC4INC60L7Qv9GL0YLQsCIxFTAT
+BgkqhkiG9w0BCQEWBmFAYS5ydTAeFw0xNjA4MDUwODM4MTFaFw0xOTAxMjIwODM4
+MTFaMIHhMQswCQYDVQQGEwJSVTEsMCoGA1UECAwj0JrRgNCw0YHQvdC+0LTQsNGA
+0YHQutC40Lkg0LrRgNCw0LkxGzAZBgNVBAcMEtCa0YDQsNGB0L3QvtC00LDRgDEq
+MCgGA1UECgwh0J7QntCeICLQoNC+0LPQsCDQuCDQutC+0L/Ri9GC0LAiMRgwFgYD
+VQQLDA/QmNCiLdC+0YLQtNC10LsxKjAoBgNVBAMMIdCe0J7QniAi0KDQvtCz0LAg
+0Lgg0LrQvtC/0YvRgtCwIjEVMBMGCSqGSIb3DQEJARYGYUBhLnJ1MGMwHAYGKoUD
+AgITMBIGByqFAwICIwEGByqFAwICHgEDQwAEQNz1pBRgNdbt0/EmcAHtKX83YYS7
+JArNQBDAk7QMkGr2XNqpe8FFCqvH6aIeMPwcJ/CmpOR60Rugf3N4FJ3VA+AwCgYG
+KoUDAgIDBQADQQBXjYwQLuQqhdS7yhY0gh38behzPIdWUQaPZIu/+BYvZF8szXdu
+ID4lpcoZxRwQ37jX+suvd6koFC6V00gEnRCo
+-----END CERTIFICATE-----`
+
 var (
 	testFile string
 	testPath string
@@ -59,6 +82,15 @@ func readData(into *[]byte) error {
 	return nil
 }
 
+func writeTestCerts(t *testing.T) {
+	if err := ioutil.WriteFile(filepath.Join(testPath, "private.pem"), []byte(testPrivateKey), 0660); err != nil {
+		t.Fatal(err)
+	}
+	if err := ioutil.WriteFile(filepath.Join(testPath, "cert.cer"), []byte(testCertificate), 0660); err != nil {
+		t.Fatal(err)
+	}
+}
+
 func createTestFile(t *testing.T) {
 	testFile = ""
 
@@ -72,14 +104,16 @@ func createTestFile(t *testing.T) {
 	if err := readData(&sourceData); err != nil {
 		t.Fatal(err)
 	}
+
+	writeTestCerts(t)
 }
 
 func getSSLParams() SSLParams {
 	return SSLParams{
 		OpenSSLPath:         "/gost-ssl/bin/openssl",
-		OurCertFilePath:     "/gfk/certs/kakunin/kakunin.cer",
-		ForeignCertFilePath: "/gfk/certs/equifax1617/prod/Prod_Equifax_2016-2017.cer",
-		OurPrivateKey:       "/gfk/private.pem",
+		OurCertFilePath:     filepath.Join(testPath, "cert.cer"),
+		ForeignCertFilePath: filepath.Join(testPath, "cert.cer"),
+		OurPrivateKey:       filepath.Join(testPath, "private.pem"),
 	}
 }
 
