@@ -194,3 +194,14 @@ func TestIsDirTrue(t *testing.T) {
 		t.Fatal("Ожидалось получить isDir true, получили false")
 	}
 }
+
+func TestEncodeToWindows1251(t *testing.T) {
+	str := "Я проверяю tochno"
+	strToWindows1251, err := EncodeToWindows1251([]byte(str))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(strToWindows1251) != 17 {
+		t.Fatal("Ошибка преобразования в windows-1251, русские буквы должны занимать 1 байт")
+	}
+}

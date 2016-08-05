@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"errors"
+	"golang.org/x/text/encoding/charmap"
 	"math"
 	"os"
 	"path/filepath"
@@ -233,4 +234,15 @@ func IsDir(path string) (bool, error) {
 		return false, err
 	}
 	return fi.IsDir(), nil
+}
+
+// EncodeToWindows1251 перекодирует срез байт b из стандартной Go кодировки UTF-8
+// в кодировку Windows-1251
+func EncodeToWindows1251(b []byte) ([]byte, error) {
+	enc := charmap.Windows1251.NewEncoder()
+	out, err := enc.Bytes(b)
+	if err != nil {
+		return []byte(""), err
+	}
+	return out, nil
 }
