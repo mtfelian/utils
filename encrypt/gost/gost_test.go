@@ -118,7 +118,8 @@ func getSSLParams() SSLParams {
 }
 
 func TestSignDER(t *testing.T) {
-	if os.Getenv("CI_NAME") == "VEXOR" {
+	if utils.IsInVexor() {
+		fmt.Println("No GOST OpenSSL in Vexor")
 		return
 	}
 

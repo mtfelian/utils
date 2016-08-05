@@ -11,6 +11,11 @@ import (
 	"strconv"
 )
 
+// IsInVexor возвращает true если выполнение происходит в среде Vexor, иначе false
+func IsInVexor() bool {
+	return os.Getenv("CI_NAME") == "VEXOR"
+}
+
 // StringToUint трактует строку s как значение типа uint
 func StringToUint(s string) (uint, error) {
 	val, err := strconv.ParseUint(s, 10, 32)
