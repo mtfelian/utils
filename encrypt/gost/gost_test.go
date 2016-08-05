@@ -118,6 +118,10 @@ func getSSLParams() SSLParams {
 }
 
 func TestSignDER(t *testing.T) {
+	if os.Getenv("CI_NAME") == "VEXOR" {
+		return
+	}
+
 	defer func() {
 		os.RemoveAll(testPath)
 	}()
