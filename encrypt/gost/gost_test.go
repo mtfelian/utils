@@ -43,27 +43,15 @@ var (
 )
 
 func TestMain(m *testing.M) {
-	binPath, err := utils.GetSelfPath()
-	if err != nil {
-		fmt.Errorf("Ошибка получения пути к приложению: %v\n", err)
-	}
-	testPath = filepath.Join(binPath, testDir)
-	if err := removeTestFiles(); err != nil {
-		fmt.Errorf("Ошибка удаления тестовых директорий: %v\n", err)
-	}
-	if err := os.MkdirAll(testPath, 0777); err != nil {
-		fmt.Errorf("Ошибка создания тестовых директорий: %v\n", err)
-	}
-	sourceData = []byte{}
-	decryptedData = []byte{}
-
 	os.Exit(m.Run())
 }
+
 
 func removeTestFiles() error {
 	return os.RemoveAll(testPath)
 }
 
+// readData читает данные из получившегося в результате проверяемых манипуляций файла в тестовые переменные
 func readData(into *[]byte) error {
 	*into = []byte{}
 	p := filepath.Join(testPath, testFile)
@@ -82,6 +70,7 @@ func readData(into *[]byte) error {
 	return nil
 }
 
+// writeTestCerts записывает тестовый приватный ключ и сертификат
 func writeTestCerts(t *testing.T) {
 	if err := ioutil.WriteFile(filepath.Join(testPath, "private.pem"), []byte(testPrivateKey), 0660); err != nil {
 		t.Fatal(err)
@@ -91,7 +80,22 @@ func writeTestCerts(t *testing.T) {
 	}
 }
 
+// createTestFile создаёт тестовый файл
 func createTestFile(t *testing.T) {
+	binPath, err := utils.GetSelfPath()
+	if err != nil {
+		fmt.Errorf("Ошибка получения пути к приложению: %v\n", err)
+	}
+	testPath = filepath.Join(binPath, testDir)
+	if err := removeTestFiles(); err != nil {
+		fmt.Errorf("Ошибка удаления тестовых директорий: %v\n", err)
+	}
+	if err := os.MkdirAll(testPath, 0777); err != nil {
+		fmt.Errorf("Ошибка создания тестовых директорий: %v\n", err)
+	}
+	sourceData = []byte{}
+	decryptedData = []byte{}
+
 	testFile = ""
 
 	file1Name := "file1"
@@ -108,6 +112,7 @@ func createTestFile(t *testing.T) {
 	writeTestCerts(t)
 }
 
+// getSSLParams возвращает параметры SSL для теста
 func getSSLParams() SSLParams {
 	return SSLParams{
 		OpenSSLPath:         "/gost-ssl/bin/openssl",
@@ -117,21 +122,24 @@ func getSSLParams() SSLParams {
 	}
 }
 
+// cleanup сбрасывает тестовые переменные и удаляет тестовые файлы и директории
+func cleanup() {
+	removeTestFiles()
+}
+
 func TestSignDER(t *testing.T) {
 	if utils.IsInVexor() {
 		fmt.Println("No GOST OpenSSL in Vexor")
 		return
 	}
 
-	defer func() {
-		os.RemoveAll(testPath)
-	}()
+	defer cleanup()
 	createTestFile(t)
 
 	testFileIn := filepath.Join(testPath, testFile)
 	testFileOut := testFileIn + ".sgn"
 
-	signer := NewGostSigner(getSSLParams())
+	signer := NewGostSignerEncryptor(getSSLParams())
 	if err := signer.SignDER(testFileIn, testFileOut); err != nil {
 		t.Fatalf("Ошибка SignDER(): %v", err)
 	}
@@ -148,5 +156,29 @@ func TestSignDER(t *testing.T) {
 }
 
 func TestEncrypt(t *testing.T) {
+	if utils.IsInVexor() {
+		fmt.Println("No GOST OpenSSL in Vexor")
+		return
+	}
 
+	defer cleanup()
+	createTestFile(t)
+
+	testFileIn := filepath.Join(testPath, testFile)
+	testFileOut := testFileIn + ".enc"
+
+	signer := NewGostSignerEncryptor(getSSLParams())
+	if err := signer.Encrypt(testFileIn, testFileOut); err != nil {
+		t.Fatalf("Ошибка SignDER(): %v", err)
+	}
+
+	// проверяем только что подписанный файл существует и его получается прочитать
+	if !utils.FileExists(testFileOut) {
+		t.Errorf("Файл %s должен быть распакован, но не найден.\n", testFileOut)
+	}
+	if err := readData(&decryptedData); err != nil {
+		t.Error(err)
+	}
+
+	// todo хорошо бы проверить расшифровку
 }

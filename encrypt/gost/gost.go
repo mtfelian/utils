@@ -23,8 +23,8 @@ func (s gostSSL) getParams() SSLParams {
 	return s.params
 }
 
-// NewGostSigner создаёт новый объект для подписи
-func NewGostSigner(params SSLParams) encrypt.Signer {
+// NewGostSignerEncryptor создаёт новый объект для подписи
+func NewGostSignerEncryptor(params SSLParams) encrypt.SignerEncryptor {
 	if !utils.FileExists(params.OpenSSLPath) {
 		fmt.Println("Не удаётся получить доступ к openSSL по заданному пути.")
 		os.Exit(1)
@@ -65,8 +65,42 @@ func (s gostSSL) SignDER(fileIn string, fileOut string) error {
 
 	cmd := exec.Command(s.getParams().OpenSSLPath, cmdParams...)
 	// в первом параметре вывод команды
-	output, err := cmd.CombinedOutput()
-	fmt.Println(string(output))
+	_, err := cmd.CombinedOutput()
+	//fmt.Println(string(output))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Encrypt шифрует файл с путём fileIn в формат DER
+// выход - зашифрованный записывается в путь fileOut
+func (s gostSSL) Encrypt(fileIn string, fileOut string) error {
+	// Пример командной строки:
+	// /gost-ssl/bin/openssl smime -encrypt -engine gost -gost89 -in test.xml.sgn -binary -outform der
+	// -out test.xml.sgn.enc certs/equifax1617/Боевой\ сервер/Prod_Equifax_2016-2017.cer
+	p := s.getParams()
+	cmdParams := []string{
+		"smime",
+		"-encrypt",
+		"-engine",
+		"gost",
+		"-gost89",
+		"-in",
+		fileIn,
+		"-binary",
+		"-outform",
+		"der",
+		"-out",
+		fileOut,
+		p.ForeignCertFilePath,
+	}
+
+	cmd := exec.Command(s.getParams().OpenSSLPath, cmdParams...)
+	// в первом параметре вывод команды
+	_, err := cmd.CombinedOutput()
+	//fmt.Println(string(output))
 	if err != nil {
 		return err
 	}
