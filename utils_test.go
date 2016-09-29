@@ -242,7 +242,7 @@ func TestCheckSnils(t *testing.T) {
 	}
 
 	for key, expectedValue := range testCases {
-		receivedValue, receivedErr := checkSnils(key)
+		receivedValue, receivedErr := CheckSnils(key)
 		if (expectedValue.err == nil) != (receivedErr == nil) {
 			t.Fatalf("Кейс '%s'. Err ожидалось '%v', получено '%v'",
 				key, expectedValue.err, receivedErr)

@@ -101,8 +101,8 @@ func trimSnils(snils string) string {
 	return re.ReplaceAllString(snils, "")
 }
 
-// checkSnils проверяет СНИЛС на валидность путём вычисления его контрольной суммы
-func checkSnils(snils string) (bool, error) {
+// CheckSnils проверяет СНИЛС на валидность путём вычисления его контрольной суммы
+func CheckSnils(snils string) (bool, error) {
 	const minimumSnilsCanValidate = 1001998
 
 	s := trimSnils(snils)
