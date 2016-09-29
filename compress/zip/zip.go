@@ -20,12 +20,12 @@ func Compress(fileOut string, pathIn ...string) error {
 		}
 	}
 
-	cmdParams := []string{fileOut}
+	cmdParams := []string{"-j", fileOut,}
 	cmdParams = append(cmdParams, pathIn...)
 
 	cmd := exec.Command(zipPath, cmdParams...)
 	output, err := cmd.CombinedOutput()
-	fmt.Printf("\n### OUTPUT: %v\n", string(output))
+	fmt.Printf("\n### OUTPUT COMPRESS: %v\n", string(output))
 	if err != nil {
 		fmt.Println("Ошибка выполнения команды zip: ", err.Error())
 		return err
@@ -43,7 +43,7 @@ func Decompress(fileIn string, pathOut string) error {
 	}
 	cmd := exec.Command(unzipPath, cmdParams...)
 	output, err := cmd.CombinedOutput()
-	fmt.Printf("\n### OUTPUT: %v\n", string(output))
+	fmt.Printf("\n### OUTPUT DECOMPRESS: %v\n", string(output))
 	if err != nil {
 		fmt.Println("Ошибка выполнения команды unzip: ", err.Error())
 		return err
