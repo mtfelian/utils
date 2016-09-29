@@ -94,6 +94,53 @@ func FormatPhone(phone string) (string, error) {
 	return res, nil
 }
 
+// trimSnils удаляет из СНИЛС всё кроме цифр
+func trimSnils(snils string) string {
+	re := regexp.MustCompile("[^0-9]")
+	return re.ReplaceAllString(snils, "")
+}
+
+func checkSnils(snils string) (bool, error) {
+	//s := strings.Replace(snils, ' ', '', -1)
+
+	/*public static function checkSnils($snilsForCheck) {
+	$snils = self::clearSnils($snilsForCheck);
+	$pattern = '/^\d{11}$/';
+	if (!preg_match($pattern, $snils)) {
+	return false;
+	}
+	$b = str_split($snils);
+	$c = array_slice($b, 0, 9);
+	$str = implode('', $c);
+	$num = intval($str, 10);
+
+	if ($num == 0) {
+	return false;
+	}
+
+	if ($num < self::snils_min_valid) {
+	return true;
+	}
+
+	$d = implode('', array_slice($b, -2, 2));
+	$e = intval($d, 10);
+	$sum = 0;
+	$i = 9;
+
+	foreach ($c as $number) {
+	$sum += $number * $i;
+	$i--;
+	}
+
+	$controlSum = $sum % 101;
+	if ($controlSum == 100) {
+	$controlSum = 0;
+	}
+	return $controlSum === $e;
+	}*/
+	return false, nil
+}
+
 var renderFloatPrecisionMultipliers = [10]float64{
 	1,
 	10,

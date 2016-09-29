@@ -205,3 +205,18 @@ func TestEncodeToWindows1251(t *testing.T) {
 		t.Fatal("Ошибка преобразования в windows-1251, русские буквы должны занимать 1 байт")
 	}
 }
+
+func testTrimSnils(t *testing.T) {
+	testCases := map[string]string{
+		"12345678910":      "12345678910",
+		"123-456- 789-1 0": "12345678910",
+		"123 ":             "123",
+		"":                 "",
+	}
+	for key, expectedValue := range testCases {
+		receivedValue := trimSnils(key)
+		if expectedValue != receivedValue {
+			t.Fatalf("Ожидалось '%s', получено '%s'", expectedValue, receivedValue)
+		}
+	}
+}
