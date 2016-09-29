@@ -206,17 +206,50 @@ func TestEncodeToWindows1251(t *testing.T) {
 	}
 }
 
-func testTrimSnils(t *testing.T) {
+func TestTrimSnils(t *testing.T) {
 	testCases := map[string]string{
 		"12345678910":      "12345678910",
 		"123-456- 789-1 0": "12345678910",
 		"123 ":             "123",
 		"":                 "",
 	}
+
 	for key, expectedValue := range testCases {
 		receivedValue := trimSnils(key)
 		if expectedValue != receivedValue {
-			t.Fatalf("Ожидалось '%s', получено '%s'", expectedValue, receivedValue)
+			t.Fatalf("Кейс '%s'. Ожидалось '%s', получено '%s'", key, expectedValue, receivedValue)
+		}
+	}
+}
+
+func TestCheckSnils(t *testing.T) {
+	type validationResult struct {
+		ok  bool
+		err error
+	}
+	// err не nil хз как тут протестить
+	testCases := map[string]validationResult{
+		"13972606386":    validationResult{ok: true, err: nil},
+		"16776206804":    validationResult{ok: true, err: nil},
+		"167 762 068-04": validationResult{ok: true, err: nil},
+		"1677620680":     validationResult{ok: false, err: nil},
+		"00000000000":    validationResult{ok: false, err: nil},
+		"00000000100":    validationResult{ok: true, err: nil},
+		"00100199799":    validationResult{ok: true, err: nil},
+		"00100199899":    validationResult{ok: false, err: nil},
+		"10050010056":    validationResult{ok: false, err: nil},
+		"167762o6804":    validationResult{ok: false, err: nil},
+	}
+
+	for key, expectedValue := range testCases {
+		receivedValue, receivedErr := checkSnils(key)
+		if (expectedValue.err == nil) != (receivedErr == nil) {
+			t.Fatalf("Кейс '%s'. Err ожидалось '%v', получено '%v'",
+				key, expectedValue.err, receivedErr)
+		}
+		if expectedValue.ok != receivedValue {
+			t.Fatalf("Кейс '%s'. Проверка ожидалась '%v', получено '%v'",
+				key, expectedValue.ok, receivedValue)
 		}
 	}
 }

@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strconv"
+	"strings"
 )
 
 // IsInVexor возвращает true если выполнение происходит в среде Vexor, иначе false
@@ -100,45 +101,55 @@ func trimSnils(snils string) string {
 	return re.ReplaceAllString(snils, "")
 }
 
+// checkSnils проверяет СНИЛС на валидность путём вычисления его контрольной суммы
 func checkSnils(snils string) (bool, error) {
-	//s := strings.Replace(snils, ' ', '', -1)
+	const minimumSnilsCanValidate = 1001998
 
-	/*public static function checkSnils($snilsForCheck) {
-	$snils = self::clearSnils($snilsForCheck);
-	$pattern = '/^\d{11}$/';
-	if (!preg_match($pattern, $snils)) {
-	return false;
-	}
-	$b = str_split($snils);
-	$c = array_slice($b, 0, 9);
-	$str = implode('', $c);
-	$num = intval($str, 10);
-
-	if ($num == 0) {
-	return false;
+	s := trimSnils(snils)
+	pattern := regexp.MustCompile(`^\d{11}$`)
+	if !pattern.MatchString(s) {
+		return false, nil
 	}
 
-	if ($num < self::snils_min_valid) {
-	return true;
+	digits := strings.Split(s, "") // все цифры СНИЛСа
+	numberDigits := digits[0:9]    // цифры номера
+	numUint, err := strconv.ParseUint(strings.Join(numberDigits, ""), 10, 32)
+	if err != nil {
+		return false, err
 	}
 
-	$d = implode('', array_slice($b, -2, 2));
-	$e = intval($d, 10);
-	$sum = 0;
-	$i = 9;
-
-	foreach ($c as $number) {
-	$sum += $number * $i;
-	$i--;
+	// номер 0 не валидный
+	if numUint == 0 {
+		return false, nil
 	}
 
-	$controlSum = $sum % 101;
-	if ($controlSum == 100) {
-	$controlSum = 0;
+	// считаем валидными те номера, для которых не считается контрольная сумма
+	if numUint < minimumSnilsCanValidate {
+		return true, nil
 	}
-	return $controlSum === $e;
-	}*/
-	return false, nil
+
+	checkSumDigits := digits[9:11] // цифры контрольной суммы
+	checkSumUint, err := strconv.ParseUint(strings.Join(checkSumDigits, ""), 10, 32)
+	if err != nil {
+		return false, err
+	}
+
+	sum, i := uint(0), uint(9)
+	for _, digit := range numberDigits {
+		digitAsUint, err := strconv.ParseUint(digit, 10, 32)
+		if err != nil {
+			return false, nil
+		}
+		sum += uint(digitAsUint) * i
+		i--
+	}
+
+	expectedCheckSum := sum % 101
+	if expectedCheckSum == 100 {
+		expectedCheckSum = 0
+	}
+
+	return expectedCheckSum == uint(checkSumUint), nil
 }
 
 var renderFloatPrecisionMultipliers = [10]float64{
