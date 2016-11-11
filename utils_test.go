@@ -253,3 +253,61 @@ func TestCheckSnils(t *testing.T) {
 		}
 	}
 }
+
+func TestCountElementsOnPage(t *testing.T) {
+	// {elementsTotal, page, pageSize}: result
+	testData := map[[3]uint]uint{
+		[3]uint{0, 1, 1}:   0,
+		[3]uint{1, 1, 1}:   1,
+		[3]uint{0, 0, 1}:   0,
+		[3]uint{1, 1, 0}:   1,
+		[3]uint{1, 2, 1}:   0,
+		[3]uint{10, 1, 1}:  1,
+		[3]uint{10, 1, 0}:  10,
+		[3]uint{10, 0, 1}:  1,
+		[3]uint{10, 5, 1}:  1,
+		[3]uint{10, 10, 1}: 1,
+		[3]uint{10, 11, 1}: 0,
+		[3]uint{10, 5, 0}:  0,
+		[3]uint{10, 10, 0}: 0,
+		[3]uint{10, 11, 0}: 0,
+		[3]uint{10, 1, 4}:  4,
+		[3]uint{10, 0, 4}:  4,
+		[3]uint{10, 2, 4}:  4,
+		[3]uint{10, 3, 4}:  2,
+		[3]uint{10, 1, 20}: 10,
+		[3]uint{10, 0, 20}: 10,
+		[3]uint{10, 2, 20}: 0,
+	}
+
+	for key, value := range testData {
+		receivedResult := CountElementsOnPage(key[0], key[1], key[2])
+		if receivedResult != value {
+			t.Fatalf("Кортеж %v. Ожидался результат %d, получен результат %d.", key, value, receivedResult)
+		}
+	}
+}
+
+func TestCountPages(t *testing.T) {
+	// {elementsTotal, pageSize}: result
+	testData := map[[2]uint]uint{
+		[2]uint{0, 0}:   0,
+		[2]uint{0, 1}:   0,
+		[2]uint{1, 0}:   1,
+		[2]uint{1, 1}:   1,
+		[2]uint{10, 1}:  10,
+		[2]uint{10, 5}:  2,
+		[2]uint{10, 3}:  4,
+		[2]uint{10, 8}:  2,
+		[2]uint{10, 0}:  1,
+		[2]uint{10, 10}: 1,
+		[2]uint{10, 15}: 1,
+	}
+
+	for key, value := range testData {
+		receivedResult := CountPages(key[0], key[1])
+		if receivedResult != value {
+			t.Fatalf("Кортеж %v. Ожидался результат %d, получен результат %d.", key, value, receivedResult)
+		}
+	}
+}

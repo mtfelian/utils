@@ -304,3 +304,49 @@ func EncodeToWindows1251(b []byte) ([]byte, error) {
 	}
 	return out, nil
 }
+
+// CountElementsOnPage возвращает количество элементов на заданной странице page с размером pageSize
+// если всего элементов elementsTotal. Если pageSize равно 0, считается что оно равно elementsTotal
+func CountElementsOnPage(elementsTotal uint, page uint, pageSize uint) uint {
+	if pageSize < 1 {
+		pageSize = elementsTotal
+	}
+	if page < 1 {
+		page = 1
+	}
+
+	pages := CountPages(elementsTotal, pageSize)
+	elementsOnLastPage := elementsTotal % pageSize
+
+	if page > pages {
+		return 0
+	}
+
+	if elementsOnLastPage == 0 {
+		elementsOnLastPage = pageSize
+	}
+
+	if page == pages {
+		return elementsOnLastPage
+	}
+
+	return pageSize
+}
+
+// CountPages возвращает количство страниц размера pageSize если всего элементов elementsTotal.
+// Если pageSize равно 0, возвращает 1
+func CountPages(elementsTotal uint, pageSize uint) uint {
+	if elementsTotal == 0 {
+		return 0
+	}
+
+	if pageSize == 0 {
+		return 1
+	}
+
+	countPages := elementsTotal / pageSize
+	if elementsTotal%pageSize != 0 {
+		countPages++
+	}
+	return countPages
+}
