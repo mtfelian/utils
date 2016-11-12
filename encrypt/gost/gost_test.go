@@ -46,7 +46,6 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-
 func removeTestFiles() error {
 	return os.RemoveAll(testPath)
 }

@@ -7,9 +7,11 @@ import (
 	"fmt"
 	"golang.org/x/text/encoding/charmap"
 	"math"
+	"net/http"
 	"os"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"sort"
 	"strconv"
 	"strings"
@@ -370,6 +372,79 @@ func (ss StringSlice) String() string {
 // PString возвращает указатель на строку s
 func PString(s string) *string {
 	return &s
+}
+
+// PUint возвращает указатель на uint i
+func PUint(i uint) *uint {
+	return &i
+}
+
+// GetIPAddress пытается получить IP адрес из заголовков HTTP
+// возвращает соотв-ю строку, или "0.0.0.0"
+func GetIPAddress(request *http.Request) string {
+	regexpIP4 := regexp.MustCompile(`^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.` +
+		`(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.` +
+		`(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.` +
+		`(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$`)
+
+	ipKeys := []string{"HTTP_CLIENT_IP",
+		"HTTP_X_FORWARDED_FOR",
+		"HTTP_X_FORWARDED",
+		"HTTP_X_CLUSTER_CLIENT_IP",
+		"HTTP_FORWARDED_FOR",
+		"HTTP_FORWARDED",
+		"REMOTE_ADDR",
+	}
+
+	for _, headerKey := range ipKeys {
+		headerValue := request.Header.Get(headerKey)
+		if headerValue != "" {
+			headerValueParts := strings.Split(headerValue, ",")
+			for _, headerValuePart := range headerValueParts {
+				ip := strings.TrimSpace(headerValuePart)
+				if regexpIP4.MatchString(ip) {
+					return ip
+				}
+			}
+		}
+	}
+
+	remoteAddr := request.Header.Get("REMOTE_ADDR")
+	if remoteAddr != "" {
+		return remoteAddr
+	}
+	return "0.0.0.0"
+}
+
+// CallerFuncName возвращает имя функции, вызвавшей функцию, из которой была вызвана CallerFuncName()
+func CallerFuncName() (string, error) {
+	fpcs := make([]uintptr, 1)
+
+	n := runtime.Callers(3, fpcs)
+	if n == 0 {
+		return "", errors.New("Error after runtime.Callers(), n == 0")
+	}
+
+	fun := runtime.FuncForPC(fpcs[0] - 1)
+	if fun == nil {
+		return "", errors.New("Error after runtime.FuncForPC(): fun == nil")
+	}
+
+	return fun.Name(), nil
+}
+
+// RemoveDuplicates удаляет повторные значения из среза s
+func RemoveDuplicates(s *[]uint) {
+	found := make(map[uint]bool)
+	j := 0
+	for i, element := range *s {
+		if !found[element] {
+			found[element] = true
+			(*s)[j] = (*s)[i]
+			j++
+		}
+	}
+	*s = (*s)[:j]
 }
 
 // UintSlice attaches the methods of sort.Interface to []uint, sorting in increasing order.
