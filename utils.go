@@ -379,6 +379,11 @@ func PUint(i uint) *uint {
 	return &i
 }
 
+// PInt возвращает указатель на int i
+func PInt(i int) *int {
+	return &i
+}
+
 // GetIPAddress пытается получить IP адрес из заголовков HTTP
 // возвращает соотв-ю строку, или "0.0.0.0"
 func GetIPAddress(request *http.Request) string {
