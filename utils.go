@@ -4,11 +4,13 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"errors"
+	"fmt"
 	"golang.org/x/text/encoding/charmap"
 	"math"
 	"os"
 	"path/filepath"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -350,3 +352,36 @@ func CountPages(elementsTotal uint, pageSize uint) uint {
 	}
 	return countPages
 }
+
+// StringSlice это срез строк
+// реализует интерфейс Stringer
+type StringSlice []string
+
+// String возвращает строку, содержащую значения среза строк,
+// где элементы разделены переносами строки
+func (ss StringSlice) String() string {
+	result := ""
+	for _, element := range ss {
+		result += fmt.Sprintf("%s\n", element)
+	}
+	return result
+}
+
+// PString возвращает указатель на строку s
+func PString(s string) *string {
+	return &s
+}
+
+// UintSlice attaches the methods of sort.Interface to []uint, sorting in increasing order.
+type UintSlice []uint
+
+func (p UintSlice) Len() int           { return len(p) }
+func (p UintSlice) Less(i, j int) bool { return p[i] < p[j] }
+func (p UintSlice) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
+func (p UintSlice) Sort()              { sort.Sort(p) }
+
+// SortUints sorts a slice of uints in increasing order.
+func SortUints(a []uint) { sort.Sort(UintSlice(a)) }
+
+// UintsAreSorted tests whether a slice of uints is sorted in increasing order.
+func UintsAreSorted(a []uint) bool { return sort.IsSorted(UintSlice(a)) }
