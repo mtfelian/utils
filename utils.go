@@ -369,8 +369,16 @@ func (ss StringSlice) String() string {
 	return result
 }
 
-// PString возвращает указатель на строку s
+// IsStringNil возвращает true если строка s пустая или nil, иначе false
+func IsStringNil(s *string) bool {
+	return s == nil || *s == ""
+}
+
+// PString возвращает указатель на строку s или nil, если строка пустая
 func PString(s string) *string {
+	if s == "" {
+		return nil
+	}
 	return &s
 }
 
