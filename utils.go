@@ -15,6 +15,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"github.com/mtfelian/validation"
 )
 
 // IsInVexor возвращает true если выполнение происходит в среде Vexor, иначе false
@@ -369,10 +370,12 @@ func (ss StringSlice) String() string {
 	return result
 }
 
-// IsStringNil возвращает true если строка s пустая или nil, иначе false
-func IsStringNil(s *string) bool {
-	return s == nil || *s == ""
+// IsNil возвращает true если объект является nil или содержит значение, эквивалентное нулевому
+// иначе возвращает false
+func IsNil(obj interface{}) bool {
+	return (validation.Required{}).IsSatisfied(obj)
 }
+
 
 // PString возвращает указатель на строку s или nil, если строка пустая
 func PString(s string) *string {
