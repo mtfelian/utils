@@ -373,7 +373,7 @@ func (ss StringSlice) String() string {
 // IsNil возвращает true если объект является nil или содержит значение, эквивалентное нулевому
 // иначе возвращает false
 func IsNil(obj interface{}) bool {
-	return (validation.Required{}).IsSatisfied(obj)
+	return !(validation.Required{}).IsSatisfied(obj)
 }
 
 
