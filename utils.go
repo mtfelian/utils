@@ -1,12 +1,15 @@
 package utils
 
 import (
+	"bytes"
 	"crypto/rand"
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"github.com/mtfelian/validation"
 	"golang.org/x/text/encoding/charmap"
 	"math"
+	"mime/multipart"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -15,7 +18,6 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"github.com/mtfelian/validation"
 )
 
 // IsInVexor возвращает true если выполнение происходит в среде Vexor, иначе false
@@ -376,7 +378,6 @@ func IsNil(obj interface{}) bool {
 	return !(validation.Required{}).IsSatisfied(obj)
 }
 
-
 // PString возвращает указатель на строку s или nil, если строка пустая
 func PString(s string) *string {
 	if s == "" {
@@ -476,3 +477,39 @@ func SortUints(a []uint) { sort.Sort(UintSlice(a)) }
 
 // UintsAreSorted tests whether a slice of uints is sorted in increasing order.
 func UintsAreSorted(a []uint) bool { return sort.IsSorted(UintSlice(a)) }
+
+// FileUploadRequest это параметры для POST запроса с файлом
+type FileUploadRequest struct {
+	Uri      string            // uri to send request
+	Params   map[string]string // additional parameters or nil, would be written into request fields
+	Key      string            // key of multipart field
+	Data     []byte            // file data
+	FileName string            // file name
+}
+
+// NewFileUploadRequest creates a new file upload HTTP request with optional extra params
+func NewFileUploadRequest(req FileUploadRequest) (*http.Request, error) {
+	body := bytes.NewBuffer([]byte{})
+
+	writer := multipart.NewWriter(body)
+	part, err := writer.CreateFormFile(req.Key, req.FileName)
+	if err != nil {
+		return nil, err
+	}
+	part.Write(req.Data)
+
+	for key, val := range req.Params {
+		_ = writer.WriteField(key, val)
+	}
+	err = writer.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	request, err := http.NewRequest("POST", req.Uri, body)
+	if err != nil {
+		return nil, err
+	}
+	request.Header.Add("Content-Type", writer.FormDataContentType())
+	return request, nil
+}
