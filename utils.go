@@ -2,13 +2,13 @@ package utils
 
 import (
 	"bytes"
-	"math/rand"
 	"encoding/base64"
 	"errors"
 	"fmt"
 	"github.com/mtfelian/validation"
 	"golang.org/x/text/encoding/charmap"
 	"math"
+	"math/rand"
 	"mime/multipart"
 	"net/http"
 	"os"
@@ -46,9 +46,9 @@ func UniqID(n int) (string, error) {
 	}
 	b := make([]byte, n)
 
-	randInt := func (min int, max int) int {return min + rand.Intn(max-min)}
+	randInt := func(min int, max int) int { return min + rand.Intn(max-min) }
 
-	symbols :="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+	symbols := "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 	for i := 0; i < n; i++ {
 		b[i] = symbols[byte(randInt(0, len(symbols)))]
 	}
