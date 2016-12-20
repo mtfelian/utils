@@ -2,7 +2,7 @@ package utils
 
 import (
 	"bytes"
-	"crypto/rand"
+	"math/rand"
 	"encoding/base64"
 	"errors"
 	"fmt"
@@ -18,7 +18,12 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 )
+
+func init() {
+	rand.Seed(time.Now().UTC().UnixNano())
+}
 
 // IsInVexor возвращает true если выполнение происходит в среде Vexor, иначе false
 func IsInVexor() bool {
@@ -40,10 +45,14 @@ func UniqID(n int) (string, error) {
 		return "", errors.New("n должно быть больше 0")
 	}
 	b := make([]byte, n)
-	// здесь err == nil только если мы читаем len(b) байт
-	if _, err := rand.Read(b); err != nil {
-		return "", err
+
+	randInt := func (min int, max int) int {return min + rand.Intn(max-min)}
+
+	symbols :="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+	for i := 0; i < n; i++ {
+		b[i] = symbols[byte(randInt(0, len(symbols)))]
 	}
+
 	result := base64.URLEncoding.EncodeToString(b)
 	if len(result) > n {
 		return result[:n], nil
