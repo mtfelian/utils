@@ -522,3 +522,12 @@ func NewFileUploadRequest(req FileUploadRequest) (*http.Request, error) {
 	request.Header.Add("Content-Type", writer.FormDataContentType())
 	return request, nil
 }
+
+// StringsToInterfaces преобразует срез строк в срез интерфейсов, их содержащих
+func StringsToInterfaces(s []string) []interface{} {
+	r := make([]interface{}, len(s))
+	for i, _ := range s {
+		r[i] = s[i]
+	}
+	return r
+}

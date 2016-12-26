@@ -311,3 +311,17 @@ func TestCountPages(t *testing.T) {
 		}
 	}
 }
+
+func TestStringsToInterfaces(t *testing.T) {
+	strings := []string{`123`, `234`, `345`, `123987`}
+	interfaces := StringsToInterfaces(strings)
+	for i, I := range interfaces {
+		backString, valid := I.(string)
+		if !valid {
+			t.Fatalf("Error converting string at index %d: invalid", i)
+		}
+		if backString != strings[i] {
+			t.Fatalf("Expected: %s, received: %s", strings[i], backString)
+		}
+	}
+}
