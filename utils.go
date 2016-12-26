@@ -531,17 +531,3 @@ func NewFileUploadRequest(req FileUploadRequest) (*http.Request, error) {
 	request.Header.Add("Content-Type", writer.FormDataContentType())
 	return request, nil
 }
-
-// StringsToInterfaces converts string slice to interface{} slice
-func StringsToInterfaces(s []string) []interface{} {
-	r := make([]interface{}, len(s))
-	for i, _ := range s {
-		r[i] = s[i]
-	}
-	return r
-}
-
-// S2I is a convenience function for StringsToInterfaces()
-func S2I(s []string) []interface{} {
-	return StringsToInterfaces(s)
-}
