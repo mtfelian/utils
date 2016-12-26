@@ -459,6 +459,15 @@ func CallerFuncName() (string, error) {
 	return fun.Name(), nil
 }
 
+// CallerFuncNameString returns a string from
+func CallerFuncNameString() string {
+	funcName, err := CallerFuncName()
+	if err != nil {
+		return ""
+	}
+	return funcName
+}
+
 // RemoveDuplicates удаляет повторные значения из среза s
 func RemoveDuplicates(s *[]uint) {
 	found := make(map[uint]bool)
