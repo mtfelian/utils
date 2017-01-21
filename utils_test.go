@@ -311,3 +311,26 @@ func TestCountPages(t *testing.T) {
 		}
 	}
 }
+
+// TestParseCookieString checks cookies string parsing
+func TestParseCookieString(t *testing.T) {
+	cookiesString := "token=tokenString;murka= murkaString; zhmurka=aga"
+	cookies := ParseCookieString(cookiesString)
+	if len(cookies) != 3 {
+		t.Fatalf("Expected slice size %d, received %d", 3, len(cookies))
+	}
+
+	type nameValue map[string]string
+	expectedResult := nameValue{
+		"token":   "tokenString",
+		"murka":   " murkaString",
+		"zhmurka": "aga",
+	}
+
+	for _, cookie := range cookies {
+		if expectedResult[cookie.Name] != cookie.Value {
+			t.Fatalf("Cookie with name %s, expected: %s, received: %s",
+				cookie.Name, expectedResult[cookie.Name], cookie.Value)
+		}
+	}
+}

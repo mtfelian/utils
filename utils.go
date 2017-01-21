@@ -531,3 +531,11 @@ func NewFileUploadRequest(req FileUploadRequest) (*http.Request, error) {
 	request.Header.Add("Content-Type", writer.FormDataContentType())
 	return request, nil
 }
+
+// ParseCookieString разбирает строку с куками и возвращает результат в виде среза указателей на куки
+func ParseCookieString(cookie string) []*http.Cookie {
+	header := http.Header{}
+	header.Add("Cookie", cookie)
+	request := http.Request{Header: header}
+	return request.Cookies()
+}
