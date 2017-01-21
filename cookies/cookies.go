@@ -24,3 +24,12 @@ func (cookies HttpCookies) Get(key string) *http.Cookie {
 	}
 	return nil
 }
+
+// GetValue returns a cookie value by key or an empty string if cookie is nil or has no value
+func (cookies HttpCookies) GetValue(key string) string {
+	cookie := cookies.Get(key)
+	if cookie == nil {
+		return ""
+	}
+	return cookie.Value
+}

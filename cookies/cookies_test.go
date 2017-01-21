@@ -31,7 +31,7 @@ func TestNewGet(t *testing.T) {
 	}
 }
 
-// TestGet tests getting cookie value
+// TestGet tests getting cookie
 func TestGet(t *testing.T) {
 	cookies := New(cookiesString)
 	expectedGetResult := nameValue{
@@ -47,6 +47,26 @@ func TestGet(t *testing.T) {
 		if receivedCookie.Value != expectedValue {
 			t.Fatalf("Get by name %s, expected value: %s, received value: %s",
 				key, expectedValue, receivedCookie.Value)
+		}
+	}
+}
+
+// TestGetValue tests getting cookie value
+func TestGetValue(t *testing.T) {
+	cookies := New(cookiesString)
+	expectedGetResult := nameValue{
+		"token":   "tokenString",
+		"murka":   " murkaString",
+		"zhmurka": "aga",
+		"q":       "",
+		"":        "",
+	}
+
+	for key, expectedValue := range expectedGetResult {
+		receivedCookie := cookies.GetValue(key)
+		if receivedCookie != expectedValue {
+			t.Fatalf("Get by name %s, expected value: %s, received value: %s",
+				key, expectedValue, receivedCookie)
 		}
 	}
 }
