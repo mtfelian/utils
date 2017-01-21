@@ -532,7 +532,7 @@ func NewFileUploadRequest(req FileUploadRequest) (*http.Request, error) {
 	return request, nil
 }
 
-// ParseCookieString разбирает строку с куками и возвращает результат в виде среза указателей на куки
+// ParseCookieString parses string containing cookies and returns a slice of pointers to http.Cookie objects
 func ParseCookieString(cookie string) []*http.Cookie {
 	header := http.Header{}
 	header.Add("Cookie", cookie)
