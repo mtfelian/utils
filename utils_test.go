@@ -311,3 +311,37 @@ func TestCountPages(t *testing.T) {
 		}
 	}
 }
+
+// TestSliceContains checks checking element in slice
+func TestSliceContains(t *testing.T) {
+	type testDataElement struct {
+		needle   interface{} // what to search
+		haystack interface{} // where to search, should be Kind() of reflect.Slice
+		result   bool        // expected result
+	}
+
+	testData := []testDataElement{
+		{interface{}(2), interface{}([]int{1, 2, 3, 4, 5}), true},
+		{interface{}(2), interface{}([]int{1, 3, 4, 5}), false},
+		{interface{}(2), interface{}([]int{}), false},
+		{interface{}(2), interface{}([]int{2}), true},
+		{interface{}(2), interface{}([]string{"2"}), false},
+		{interface{}(uint(2)), interface{}([]uint{1, 2, 3, 4, 5}), true},
+		{interface{}(uint(2)), interface{}([]uint{1, 3, 4, 5}), false},
+		{interface{}(uint(2)), interface{}([]uint{}), false},
+		{interface{}(uint(2)), interface{}([]uint{2}), true},
+		{interface{}(uint(2)), interface{}([]int{2}), false},
+		{interface{}(2), interface{}([]uint{2}), false},
+		{interface{}("2"), interface{}([]string{"1", "2", "3", "4", "5"}), true},
+		{interface{}("2"), interface{}([]string{"1", "3", "4", "5"}), false},
+		{interface{}("2"), interface{}([]string{}), false},
+		{interface{}("2"), interface{}([]string{"2"}), true},
+	}
+
+	for i, value := range testData {
+		receivedResult := SliceContains(value.needle, value.haystack)
+		if receivedResult != value.result {
+			t.Fatalf("Index %d. Expected %v, received %v.", i, value.result, receivedResult)
+		}
+	}
+}

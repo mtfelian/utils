@@ -5,20 +5,22 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"github.com/mtfelian/validation"
-	"golang.org/x/text/encoding/charmap"
 	"math"
 	"math/rand"
 	"mime/multipart"
 	"net/http"
 	"os"
 	"path/filepath"
+	"reflect"
 	"regexp"
 	"runtime"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/mtfelian/validation"
+	"golang.org/x/text/encoding/charmap"
 )
 
 func init() {
@@ -532,3 +534,22 @@ func NewFileUploadRequest(req FileUploadRequest) (*http.Request, error) {
 	return request, nil
 }
 
+// SliceContains checks for value of needle in slice haystack
+// haystack's underlying type should be a slice, if not, the function panics
+func SliceContains(needle interface{}, haystack interface{}) bool {
+	haystackValue := reflect.ValueOf(haystack)
+
+	if haystackValue.Kind() != reflect.Slice {
+		panic(fmt.Sprintf("haystackValue.Kind() should be reflect.Slice, detected: %v", haystackValue.Kind()))
+	}
+
+	for i := 0; i < haystackValue.Len(); i++ {
+		// panics if slice element points to an unexported struct field
+		// see https://golang.org/pkg/reflect/#Value.Interface
+		if haystackValue.Index(i).Interface() == needle {
+			return true
+		}
+	}
+
+	return false
+}
