@@ -391,9 +391,6 @@ func IsNil(obj interface{}) bool {
 
 // PString возвращает указатель на строку s или nil, если строка пустая
 func PString(s string) *string {
-	if s == "" {
-		return nil
-	}
 	return &s
 }
 
