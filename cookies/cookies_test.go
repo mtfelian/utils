@@ -38,8 +38,6 @@ func TestGet(t *testing.T) {
 		"token":   "tokenString",
 		"murka":   " murkaString",
 		"zhmurka": "aga",
-		"q":       "",
-		"":        "",
 	}
 
 	for key, expectedValue := range expectedGetResult {
