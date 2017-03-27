@@ -369,6 +369,7 @@ func CountPages(elementsTotal uint, pageSize uint) uint {
 	return countPages
 }
 
+
 // StringSlice это срез строк
 // реализует интерфейс Stringer
 type StringSlice []string
@@ -549,4 +550,40 @@ func SliceContains(needle interface{}, haystack interface{}) bool {
 	}
 
 	return false
+
+/*
+	Возвращает строку месяца
+	на русском языке в родительном падеже.
+	Параметры:
+	m - номер месяца (1-12)
+*/
+func MonthToRussianStringInCase2(m int) string {
+	switch m {
+	case 1:
+		return "января"
+	case 2:
+		return "февраля"
+	case 3:
+		return "марта"
+	case 4:
+		return "апреля"
+	case 5:
+		return "мая"
+	case 6:
+		return "июня"
+	case 7:
+		return "июля"
+	case 8:
+		return "августа"
+	case 9:
+		return "сентября"
+	case 10:
+		return "октября"
+	case 11:
+		return "ноября"
+	case 12:
+		return "декабря"
+	}
+	return ""
+
 }
