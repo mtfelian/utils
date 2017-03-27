@@ -550,7 +550,7 @@ func SliceContains(needle interface{}, haystack interface{}) bool {
 	}
 
 	return false
-
+}
 /*
 	Возвращает строку месяца
 	на русском языке в родительном падеже.
