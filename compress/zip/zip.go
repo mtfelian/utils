@@ -20,7 +20,7 @@ func Compress(fileOut string, pathIn ...string) error {
 		}
 	}
 
-	cmdParams := []string{"-j", fileOut,}
+	cmdParams := []string{"-j", fileOut}
 	cmdParams = append(cmdParams, pathIn...)
 
 	cmd := exec.Command(zipPath, cmdParams...)

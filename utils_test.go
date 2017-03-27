@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"fmt"
 	"io/ioutil"
 	"math"
 	"os"
@@ -9,23 +8,24 @@ import (
 	"testing"
 )
 
-func TestStringToUint(t *testing.T) {
-	testInt := uint(8)
-	testString := fmt.Sprintf("%d", testInt)
-	res, err := StringToUint(testString)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if res != testInt {
-		t.Fatalf("Ожидалось получить %d, получено %d", testInt, res)
-	}
+type testStringToUintResult struct {
+	Value uint
+	OK    bool
 }
 
-func TestBadStringToUint(t *testing.T) {
-	testString := "q"
-	_, err := StringToUint(testString)
-	if err == nil {
-		t.Fatal("Ожидалась ошибка")
+func TestStringToUint(t *testing.T) {
+	testCases := map[string]testStringToUintResult{
+		"0": testStringToUintResult{Value: 0, OK: true},
+		"7": testStringToUintResult{Value: 7, OK: true},
+		"q": testStringToUintResult{Value: 0, OK: false},
+		"":  testStringToUintResult{Value: 0, OK: false},
+	}
+
+	for param, testCase := range testCases {
+		receivedValue, err := StringToUint(param)
+		if (err == nil) != testCase.OK || receivedValue != testCase.Value {
+			t.Fatalf("Тест не пройден на наборе %s:%#v", param, testCase)
+		}
 	}
 }
 
@@ -308,6 +308,40 @@ func TestCountPages(t *testing.T) {
 		receivedResult := CountPages(key[0], key[1])
 		if receivedResult != value {
 			t.Fatalf("Кортеж %v. Ожидался результат %d, получен результат %d.", key, value, receivedResult)
+		}
+	}
+}
+
+// TestSliceContains checks checking element in slice
+func TestSliceContains(t *testing.T) {
+	type testDataElement struct {
+		needle   interface{} // what to search
+		haystack interface{} // where to search, should be Kind() of reflect.Slice
+		result   bool        // expected result
+	}
+
+	testData := []testDataElement{
+		{interface{}(2), interface{}([]int{1, 2, 3, 4, 5}), true},
+		{interface{}(2), interface{}([]int{1, 3, 4, 5}), false},
+		{interface{}(2), interface{}([]int{}), false},
+		{interface{}(2), interface{}([]int{2}), true},
+		{interface{}(2), interface{}([]string{"2"}), false},
+		{interface{}(uint(2)), interface{}([]uint{1, 2, 3, 4, 5}), true},
+		{interface{}(uint(2)), interface{}([]uint{1, 3, 4, 5}), false},
+		{interface{}(uint(2)), interface{}([]uint{}), false},
+		{interface{}(uint(2)), interface{}([]uint{2}), true},
+		{interface{}(uint(2)), interface{}([]int{2}), false},
+		{interface{}(2), interface{}([]uint{2}), false},
+		{interface{}("2"), interface{}([]string{"1", "2", "3", "4", "5"}), true},
+		{interface{}("2"), interface{}([]string{"1", "3", "4", "5"}), false},
+		{interface{}("2"), interface{}([]string{}), false},
+		{interface{}("2"), interface{}([]string{"2"}), true},
+	}
+
+	for i, value := range testData {
+		receivedResult := SliceContains(value.needle, value.haystack)
+		if receivedResult != value.result {
+			t.Fatalf("Index %d. Expected %v, received %v.", i, value.result, receivedResult)
 		}
 	}
 }

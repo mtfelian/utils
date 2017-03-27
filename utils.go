@@ -1,17 +1,31 @@
 package utils
 
 import (
-	"crypto/rand"
+	"bytes"
 	"encoding/base64"
 	"errors"
-	"golang.org/x/text/encoding/charmap"
+	"fmt"
 	"math"
+	"math/rand"
+	"mime/multipart"
+	"net/http"
 	"os"
 	"path/filepath"
+	"reflect"
 	"regexp"
+	"runtime"
+	"sort"
 	"strconv"
 	"strings"
+	"time"
+
+	"github.com/mtfelian/validation"
+	"golang.org/x/text/encoding/charmap"
 )
+
+func init() {
+	rand.Seed(time.Now().UTC().UnixNano())
+}
 
 // IsInVexor возвращает true если выполнение происходит в среде Vexor, иначе false
 func IsInVexor() bool {
@@ -33,10 +47,14 @@ func UniqID(n int) (string, error) {
 		return "", errors.New("n должно быть больше 0")
 	}
 	b := make([]byte, n)
-	// здесь err == nil только если мы читаем len(b) байт
-	if _, err := rand.Read(b); err != nil {
-		return "", err
+
+	randInt := func(min int, max int) int { return min + rand.Intn(max-min) }
+
+	symbols := "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+	for i := 0; i < n; i++ {
+		b[i] = symbols[byte(randInt(0, len(symbols)))]
 	}
+
 	result := base64.URLEncoding.EncodeToString(b)
 	if len(result) > n {
 		return result[:n], nil
@@ -351,6 +369,188 @@ func CountPages(elementsTotal uint, pageSize uint) uint {
 	return countPages
 }
 
+
+// StringSlice это срез строк
+// реализует интерфейс Stringer
+type StringSlice []string
+
+// String возвращает строку, содержащую значения среза строк,
+// где элементы разделены переносами строки
+func (ss StringSlice) String() string {
+	result := ""
+	for _, element := range ss {
+		result += fmt.Sprintf("%s\n", element)
+	}
+	return result
+}
+
+// IsNil возвращает true если объект является nil или содержит значение, эквивалентное нулевому
+// иначе возвращает false
+func IsNil(obj interface{}) bool {
+	return !(validation.Required{}).IsSatisfied(obj)
+}
+
+// PString возвращает указатель на строку s или nil, если строка пустая
+func PString(s string) *string {
+	return &s
+}
+
+// PUint возвращает указатель на uint i
+func PUint(i uint) *uint {
+	return &i
+}
+
+// PInt возвращает указатель на int i
+func PInt(i int) *int {
+	return &i
+}
+
+// GetIPAddress пытается получить IP адрес из заголовков HTTP
+// возвращает соотв-ю строку, или "0.0.0.0"
+func GetIPAddress(request *http.Request) string {
+	regexpIP4 := regexp.MustCompile(`^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.` +
+		`(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.` +
+		`(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.` +
+		`(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$`)
+
+	ipKeys := []string{"HTTP_CLIENT_IP",
+		"HTTP_X_FORWARDED_FOR",
+		"HTTP_X_FORWARDED",
+		"HTTP_X_CLUSTER_CLIENT_IP",
+		"HTTP_FORWARDED_FOR",
+		"HTTP_FORWARDED",
+		"REMOTE_ADDR",
+	}
+
+	for _, headerKey := range ipKeys {
+		headerValue := request.Header.Get(headerKey)
+		if headerValue != "" {
+			headerValueParts := strings.Split(headerValue, ",")
+			for _, headerValuePart := range headerValueParts {
+				ip := strings.TrimSpace(headerValuePart)
+				if regexpIP4.MatchString(ip) {
+					return ip
+				}
+			}
+		}
+	}
+
+	remoteAddr := request.Header.Get("REMOTE_ADDR")
+	if remoteAddr != "" {
+		return remoteAddr
+	}
+	return "0.0.0.0"
+}
+
+// CallerFuncName возвращает имя функции, вызвавшей функцию, из которой была вызвана CallerFuncName()
+func CallerFuncName() (string, error) {
+	fpcs := make([]uintptr, 1)
+
+	n := runtime.Callers(3, fpcs)
+	if n == 0 {
+		return "", errors.New("Error after runtime.Callers(), n == 0")
+	}
+
+	fun := runtime.FuncForPC(fpcs[0] - 1)
+	if fun == nil {
+		return "", errors.New("Error after runtime.FuncForPC(): fun == nil")
+	}
+
+	return fun.Name(), nil
+}
+
+// CallerFuncNameString returns a string from
+func CallerFuncNameString() string {
+	funcName, err := CallerFuncName()
+	if err != nil {
+		return ""
+	}
+	return funcName
+}
+
+// RemoveDuplicates удаляет повторные значения из среза s
+func RemoveDuplicates(s *[]uint) {
+	found := make(map[uint]bool)
+	j := 0
+	for i, element := range *s {
+		if !found[element] {
+			found[element] = true
+			(*s)[j] = (*s)[i]
+			j++
+		}
+	}
+	*s = (*s)[:j]
+}
+
+// UintSlice attaches the methods of sort.Interface to []uint, sorting in increasing order.
+type UintSlice []uint
+
+func (p UintSlice) Len() int           { return len(p) }
+func (p UintSlice) Less(i, j int) bool { return p[i] < p[j] }
+func (p UintSlice) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
+func (p UintSlice) Sort()              { sort.Sort(p) }
+
+// SortUints sorts a slice of uints in increasing order.
+func SortUints(a []uint) { sort.Sort(UintSlice(a)) }
+
+// UintsAreSorted tests whether a slice of uints is sorted in increasing order.
+func UintsAreSorted(a []uint) bool { return sort.IsSorted(UintSlice(a)) }
+
+// FileUploadRequest это параметры для POST запроса с файлом
+type FileUploadRequest struct {
+	Uri      string            // uri to send request
+	Params   map[string]string // additional parameters or nil, would be written into request fields
+	Key      string            // key of multipart field
+	Data     []byte            // file data
+	FileName string            // file name
+}
+
+// NewFileUploadRequest creates a new file upload HTTP request with optional extra params
+func NewFileUploadRequest(req FileUploadRequest) (*http.Request, error) {
+	body := bytes.NewBuffer([]byte{})
+
+	writer := multipart.NewWriter(body)
+	part, err := writer.CreateFormFile(req.Key, req.FileName)
+	if err != nil {
+		return nil, err
+	}
+	part.Write(req.Data)
+
+	for key, val := range req.Params {
+		_ = writer.WriteField(key, val)
+	}
+	err = writer.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	request, err := http.NewRequest("POST", req.Uri, body)
+	if err != nil {
+		return nil, err
+	}
+	request.Header.Add("Content-Type", writer.FormDataContentType())
+	return request, nil
+}
+
+// SliceContains checks for value of needle in slice haystack
+// haystack's underlying type should be a slice, if not, the function panics
+func SliceContains(needle interface{}, haystack interface{}) bool {
+	haystackValue := reflect.ValueOf(haystack)
+
+	if haystackValue.Kind() != reflect.Slice {
+		panic(fmt.Sprintf("haystackValue.Kind() should be reflect.Slice, detected: %v", haystackValue.Kind()))
+	}
+
+	for i := 0; i < haystackValue.Len(); i++ {
+		// panics if slice element points to an unexported struct field
+		// see https://golang.org/pkg/reflect/#Value.Interface
+		if haystackValue.Index(i).Interface() == needle {
+			return true
+		}
+	}
+
+	return false
+}
 /*
 	Возвращает строку месяца
 	на русском языке в родительном падеже.
@@ -385,4 +585,5 @@ func MonthToRussianStringInCase2(m int) string {
 		return "декабря"
 	}
 	return ""
+
 }
