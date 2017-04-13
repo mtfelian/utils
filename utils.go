@@ -550,3 +550,12 @@ func SliceContains(needle interface{}, haystack interface{}) bool {
 
 	return false
 }
+
+// CircularAdd возвращает следующий элемент кольцевой целочисленной арифметики начиная от a,
+// макс. элемент равен max
+func CircularAdd(a int, max int) int {
+	if a >= max {
+		return 0
+	}
+	return a + 1
+}

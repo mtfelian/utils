@@ -345,3 +345,29 @@ func TestSliceContains(t *testing.T) {
 		}
 	}
 }
+
+// TestCircularAdd checks circular addition
+func TestCircularAdd(t *testing.T) {
+	type testDataElement struct {
+		a      int
+		max    int
+		result int
+	}
+
+	testData := []testDataElement{
+		{0, 0, 0},
+		{0, 1, 1},
+		{1, 1, 0},
+		{0, 2, 1},
+		{1, 2, 2},
+		{2, 2, 0},
+	}
+
+	for i, value := range testData {
+		receivedResult := CircularAdd(value.a, value.max)
+		if receivedResult != value.result {
+			t.Fatalf("Index %d. CircularAdd(%d, %d). Expected %d, received %d.",
+				i, value.a, value.max, value.result, receivedResult)
+		}
+	}
+}
