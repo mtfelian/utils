@@ -388,13 +388,14 @@ func TestIndicesSlice(t *testing.T) {
 		{[]uint{2, 1, 3}, UintSlice{1, 2, 3}, []int{1, 0, 2}},
 		{[]uint{2}, UintSlice{2}, []int{0}},
 		{[]uint{}, UintSlice{}, []int{}},
+		{[]uint{59, 23, 1, 3, 23}, UintSlice{1, 3, 23, 23, 59}, []int{2, 3, 1, 4, 0}},
 	}
 
-	for _, value := range testData {
+	for i, value := range testData {
 		slice := NewIndicesUintSlice(value.sourceSlice...)
 		sort.Sort(slice)
 		if !reflect.DeepEqual(slice.Indices, value.expectedIndices) {
-			t.Fatalf("Index %s, wrong indices: %s", pretty.Diff(slice.Indices, value.expectedIndices))
+			t.Fatalf("Index %d, wrong indices: %s", i, pretty.Diff(slice.Indices, value.expectedIndices))
 		}
 
 		underlyingSlice, ok := slice.Interface.(UintSlice)
@@ -403,7 +404,7 @@ func TestIndicesSlice(t *testing.T) {
 		}
 
 		if !reflect.DeepEqual(underlyingSlice, value.expectedSlice) {
-			t.Fatalf("Index %s, wrong received slice: %s", pretty.Diff(underlyingSlice, value.expectedSlice))
+			t.Fatalf("Index %d, wrong received slice: %s", i, pretty.Diff(underlyingSlice, value.expectedSlice))
 		}
 	}
 }
