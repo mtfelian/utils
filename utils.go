@@ -495,6 +495,30 @@ func SortUints(a []uint) { sort.Sort(UintSlice(a)) }
 // UintsAreSorted tests whether a slice of uints is sorted in increasing order.
 func UintsAreSorted(a []uint) bool { return sort.IsSorted(UintSlice(a)) }
 
+// NewIndicesSlice creates new slice for sorting with indices remembering
+func NewIndicesSlice(n sort.Interface) *IndicesSlice {
+	s := &IndicesSlice{Interface: n, Indices: make([]int, n.Len())}
+	for i := range s.Indices {
+		s.Indices[i] = i
+	}
+	return s
+}
+
+// NewIndicesUintSlice creates new slice of uint type for sorting with indices remembering
+func NewIndicesUintSlice(n ...uint) *IndicesSlice { return NewIndicesSlice(UintSlice(n)) }
+
+// IndicesSlice is a type for sorting with indexes remembering
+type IndicesSlice struct {
+	sort.Interface
+	Indices []int
+}
+
+// Swap reimplements Swap() for sort.Interface
+func (s IndicesSlice) Swap(i, j int) {
+	s.Interface.Swap(i, j)
+	s.Indices[i], s.Indices[j] = s.Indices[j], s.Indices[i]
+}
+
 // FileUploadRequest это параметры для POST запроса с файлом
 type FileUploadRequest struct {
 	Uri      string            // uri to send request

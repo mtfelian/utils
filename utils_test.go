@@ -1,10 +1,13 @@
 package utils
 
 import (
+	"github.com/kr/pretty"
 	"io/ioutil"
 	"math"
 	"os"
 	"path/filepath"
+	"reflect"
+	"sort"
 	"testing"
 )
 
@@ -368,6 +371,39 @@ func TestCircularAdd(t *testing.T) {
 		if receivedResult != value.result {
 			t.Fatalf("Index %d. CircularAdd(%d, %d). Expected %d, received %d.",
 				i, value.a, value.max, value.result, receivedResult)
+		}
+	}
+}
+
+// TestIndicesSlice checks IndicesSlice sorting
+func TestIndicesSlice(t *testing.T) {
+	type testDataElement struct {
+		sourceSlice     []uint
+		expectedSlice   UintSlice
+		expectedIndices []int // indices from source slice after sorting
+	}
+
+	testData := []testDataElement{
+		{[]uint{6, 2, 1, 4, 3}, UintSlice{1, 2, 3, 4, 6}, []int{2, 1, 4, 3, 0}},
+		{[]uint{2, 1, 3}, UintSlice{1, 2, 3}, []int{1, 0, 2}},
+		{[]uint{2}, UintSlice{2}, []int{0}},
+		{[]uint{}, UintSlice{}, []int{}},
+	}
+
+	for _, value := range testData {
+		slice := NewIndicesUintSlice(value.sourceSlice...)
+		sort.Sort(slice)
+		if !reflect.DeepEqual(slice.Indices, value.expectedIndices) {
+			t.Fatalf("Index %s, wrong indices: %s", pretty.Diff(slice.Indices, value.expectedIndices))
+		}
+
+		underlyingSlice, ok := slice.Interface.(UintSlice)
+		if !ok {
+			t.Fatalf("Can't get underlying slice of slice.Interface")
+		}
+
+		if !reflect.DeepEqual(underlyingSlice, value.expectedSlice) {
+			t.Fatalf("Index %s, wrong received slice: %s", pretty.Diff(underlyingSlice, value.expectedSlice))
 		}
 	}
 }

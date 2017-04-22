@@ -44,6 +44,15 @@ func TestGet(t *testing.T) {
 
 	for key, expectedValue := range expectedGetResult {
 		receivedCookie := cookies.Get(key)
+
+		if expectedValue == "" {
+			if receivedCookie != nil {
+				t.Fatalf("Get by name %s, expected value: %s, received not nil cookie: %s",
+					key, expectedValue, receivedCookie.Value)
+			}
+			continue
+		}
+
 		if receivedCookie.Value != expectedValue {
 			t.Fatalf("Get by name %s, expected value: %s, received value: %s",
 				key, expectedValue, receivedCookie.Value)
