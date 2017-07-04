@@ -450,12 +450,12 @@ func CallerFuncName() (string, error) {
 		return "", errors.New("Error after runtime.Callers(), n == 0")
 	}
 
-	fun := runtime.FuncForPC(fpcs[0] - 1)
-	if fun == nil {
+	f := runtime.FuncForPC(fpcs[0] - 1)
+	if f == nil {
 		return "", errors.New("Error after runtime.FuncForPC(): fun == nil")
 	}
 
-	return fun.Name(), nil
+	return f.Name(), nil
 }
 
 // CallerFuncNameString returns a string from
@@ -465,6 +465,22 @@ func CallerFuncNameString() string {
 		return ""
 	}
 	return funcName
+}
+
+// GetFunctionName returns a name of function
+func GetFunctionName(function interface{}) (string, error) {
+	value := reflect.ValueOf(function)
+	kind := value.Kind()
+	if kind != reflect.Func {
+		return "", fmt.Errorf("Kind is not a func: %v", kind)
+	}
+
+	f := runtime.FuncForPC(value.Pointer())
+	if f == nil {
+		return "", fmt.Errorf("Pointer to func is nil")
+	}
+
+	return f.Name(), nil
 }
 
 // RemoveDuplicates удаляет повторные значения из среза s
