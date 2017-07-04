@@ -480,7 +480,9 @@ func GetFunctionName(function interface{}) (string, error) {
 		return "", fmt.Errorf("Pointer to func is nil")
 	}
 
-	return f.Name(), nil
+	fName := regexp.MustCompile(`^.*[/\\]`).ReplaceAllString(f.Name(), "")
+
+	return fName, nil
 }
 
 // RemoveDuplicates удаляет повторные значения из среза s
