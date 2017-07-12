@@ -605,6 +605,7 @@ func CircularAdd(a int, max int) int {
 // StringToUintSlice converts a string values separated by sep to slice of uint elements
 // It returns an error if any element can't be converted to uint
 // If a converted element is less than min, it will not be added
+// empty elements are ignored
 func StringToUintSlice(s string, sep string, min uint) ([]uint, error) {
 	output := []uint{}
 	for _, stringValue := range strings.Split(s, sep) {
@@ -622,4 +623,18 @@ func StringToUintSlice(s string, sep string, min uint) ([]uint, error) {
 		output = append(output, numericElement)
 	}
 	return output, nil
+}
+
+// StringToStringSlice converts a string values separated by sep to slice of string elements
+// empty elements are ignored
+func StringToStringSlice(s, sep string) []string {
+	output := []string{}
+	stringElements := strings.Split(s, ",")
+	for _, element := range stringElements {
+		element = strings.TrimSpace(element)
+		if element != "" {
+			output = append(output, element)
+		}
+	}
+	return output
 }

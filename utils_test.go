@@ -426,6 +426,8 @@ func TestStringToUintSlice(t *testing.T) {
 		{"10", ",", 10, []uint{10}, false},          // 3
 		{"10,0", ",", 10, []uint{10}, false},        // 4
 		{"10,q", ",", 10, []uint{}, true},           // 5
+		{",", ",", 10, []uint{}, false},             // 6
+		{"", ",", 10, []uint{}, false},              // 7
 	}
 
 	for i, value := range testData {
@@ -434,6 +436,33 @@ func TestStringToUintSlice(t *testing.T) {
 			t.Fatalf("Index %d, expected is error: %v, received: %v", i, value.expectedError, err != nil)
 		}
 
+		if !reflect.DeepEqual(value.expectedSlice, receivedSlice) {
+			t.Fatalf("Index %d, wrong received slice, diff: %s",
+				i, pretty.Diff(receivedSlice, value.expectedSlice))
+		}
+	}
+}
+
+// TestStringToStringSlice checks converting sepatated string to slice of string values
+func TestStringToStringSlice(t *testing.T) {
+	type testDataElement struct {
+		sourceString  string
+		separator     string
+		expectedSlice []string
+	}
+
+	testData := []testDataElement{
+		{"q4,5,6", ",", []string{"q4", "5", "6"}}, // 0
+		{",4,5,6,", ",", []string{"4", "5", "6"}}, // 1
+		{"10", ",", []string{"10"}},               // 2
+		{"10,0", ",", []string{"10", "0"}},        // 3
+		{"10,q", ",", []string{"10", "q"}},        // 4
+		{",", ",", []string{}},                    // 5
+		{"", ",", []string{}},                     // 6
+	}
+
+	for i, value := range testData {
+		receivedSlice := StringToStringSlice(value.sourceString, value.separator)
 		if !reflect.DeepEqual(value.expectedSlice, receivedSlice) {
 			t.Fatalf("Index %d, wrong received slice, diff: %s",
 				i, pretty.Diff(receivedSlice, value.expectedSlice))
