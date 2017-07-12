@@ -408,3 +408,35 @@ func TestIndicesSlice(t *testing.T) {
 		}
 	}
 }
+
+// TestStringToUintSlice checks converting sepatated string to slice of uint values
+func TestStringToUintSlice(t *testing.T) {
+	type testDataElement struct {
+		sourceString  string
+		separator     string
+		min           uint
+		expectedSlice []uint
+		expectedError bool
+	}
+
+	testData := []testDataElement{
+		{"4,5,6", ",", 2, []uint{4, 5, 6}, false},   // 0
+		{"4|5|6", "|", 5, []uint{5, 6}, false},      // 1
+		{",4,5,6,", ",", 2, []uint{4, 5, 6}, false}, // 2
+		{"10", ",", 10, []uint{10}, false},          // 3
+		{"10,0", ",", 10, []uint{10}, false},        // 4
+		{"10,q", ",", 10, []uint{}, true},           // 5
+	}
+
+	for i, value := range testData {
+		receivedSlice, err := StringToUintSlice(value.sourceString, value.separator, value.min)
+		if (err != nil) != value.expectedError {
+			t.Fatalf("Index %d, expected is error: %v, received: %v", i, value.expectedError, err != nil)
+		}
+
+		if !reflect.DeepEqual(value.expectedSlice, receivedSlice) {
+			t.Fatalf("Index %d, wrong received slice, diff: %s",
+				i, pretty.Diff(receivedSlice, value.expectedSlice))
+		}
+	}
+}
