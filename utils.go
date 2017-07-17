@@ -383,25 +383,29 @@ func (ss StringSlice) String() string {
 	return result
 }
 
-// IsNil возвращает true если объект является nil или содержит значение, эквивалентное нулевому
-// иначе возвращает false
+// IsNil returns true if obj is nil or contains empty value, otherwise returns false
 func IsNil(obj interface{}) bool {
 	return !(validation.Required{}).IsSatisfied(obj)
 }
 
-// PString возвращает указатель на строку s или nil, если строка пустая
+// PString returns a pointer to string s
 func PString(s string) *string {
 	return &s
 }
 
-// PUint возвращает указатель на uint i
+// PUint returns a pointer to uint value i
 func PUint(i uint) *uint {
 	return &i
 }
 
-// PInt возвращает указатель на int i
+// PInt returns a pointer to int value i
 func PInt(i int) *int {
 	return &i
+}
+
+// PBool returns a pointer to bool value b
+func PBool(b bool) *bool {
+	return &b
 }
 
 // GetIPAddress пытается получить IP адрес из заголовков HTTP
