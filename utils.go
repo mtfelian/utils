@@ -416,7 +416,9 @@ func GetIPAddress(request *http.Request) string {
 		`(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.` +
 		`(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$`)
 
-	ipKeys := []string{"HTTP_CLIENT_IP",
+	ipKeys := []string{
+		"X-Real-Ip",
+		"HTTP_CLIENT_IP",
 		"HTTP_X_FORWARDED_FOR",
 		"HTTP_X_FORWARDED",
 		"HTTP_X_CLUSTER_CLIENT_IP",
