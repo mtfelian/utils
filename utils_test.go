@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"github.com/kr/pretty"
 	"io/ioutil"
 	"math"
 	"os"
@@ -9,6 +8,8 @@ import (
 	"reflect"
 	"sort"
 	"testing"
+
+	"github.com/kr/pretty"
 )
 
 type testStringToUintResult struct {
@@ -466,6 +467,33 @@ func TestStringToStringSlice(t *testing.T) {
 		if !reflect.DeepEqual(value.expectedSlice, receivedSlice) {
 			t.Fatalf("Index %d, wrong received slice, diff: %s",
 				i, pretty.Diff(receivedSlice, value.expectedSlice))
+		}
+	}
+}
+
+// TestToLowerFirstRune checks converting first rune of string to lowercase
+func TestToLowerFirstRune(t *testing.T) {
+	type testDataElement struct {
+		sourceString   string
+		expectedString string
+	}
+
+	testData := []testDataElement{
+		{"", ""},             // 0
+		{"Q", "q"},           // 1
+		{"q", "q"},           // 2
+		{":", ":"},           // 3
+		{" ", " "},           // 4
+		{"QWERTY", "qWERTY"}, // 5
+		{"qwerty", "qwerty"}, // 6
+		{"Q Q", "q Q"},       // 7
+		{"Q_Q", "q_Q"},       // 8
+	}
+
+	for i, value := range testData {
+		receivedString := ToLowerFirstRune(value.sourceString)
+		if receivedString != value.expectedString {
+			t.Fatalf("Index %d, expected: %s, received: %s", i, value.expectedString, receivedString)
 		}
 	}
 }

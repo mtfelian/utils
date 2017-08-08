@@ -18,6 +18,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode"
+	"unicode/utf8"
 
 	"github.com/mtfelian/validation"
 	"golang.org/x/text/encoding/charmap"
@@ -643,4 +645,14 @@ func StringToStringSlice(s, sep string) []string {
 		}
 	}
 	return output
+}
+
+// ToLowerFirstRune returns string s with first rune converted to it's lowercase form
+func ToLowerFirstRune(s string) string {
+	if utf8.RuneCountInString(s) == 0 {
+		return s
+	}
+	runes := []rune(s)
+	runes[0] = unicode.ToLower(runes[0])
+	return string(runes)
 }
