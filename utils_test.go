@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"fmt"
 	"io/ioutil"
 	"math"
 	"os"
@@ -8,10 +9,9 @@ import (
 	"reflect"
 	"sort"
 	"testing"
-
-	"fmt"
-	"github.com/kr/pretty"
 	"time"
+
+	"github.com/kr/pretty"
 )
 
 type testStringToUintResult struct {
