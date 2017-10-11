@@ -656,3 +656,24 @@ func ToLowerFirstRune(s string) string {
 	runes[0] = unicode.ToLower(runes[0])
 	return string(runes)
 }
+
+// Try tries n times to call an actionFunc() until conditionFunc() returns true
+// actionFunc is a func returning error
+// n is a number of times to try to call actionFunc()
+// delay is a delay between calls actionFunc()
+// conditionFunc is a func accepting error, if it returns true, Try will try again
+// Try returns a number of attempts
+func Try(actionFunc func() error, n int, delay time.Duration, conditionFunc func(e error) bool) (int, error) {
+	var err error
+	i := 0
+	for i < n {
+		i++
+		err = actionFunc()
+		if conditionFunc(err) {
+			time.Sleep(delay)
+			continue
+		}
+		break
+	}
+	return i, err
+}

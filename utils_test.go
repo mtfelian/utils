@@ -9,7 +9,9 @@ import (
 	"sort"
 	"testing"
 
+	"fmt"
 	"github.com/kr/pretty"
+	"time"
 )
 
 type testStringToUintResult struct {
@@ -494,6 +496,37 @@ func TestToLowerFirstRune(t *testing.T) {
 		receivedString := ToLowerFirstRune(value.sourceString)
 		if receivedString != value.expectedString {
 			t.Fatalf("Index %d, expected: %s, received: %s", i, value.expectedString, receivedString)
+		}
+	}
+}
+
+// TestTry checks trying function
+func TestTry(t *testing.T) {
+	i := 0
+	actionFunc := func() error {
+		if i < 5 {
+			fmt.Printf("success: executed actionFunc() with i = %d\n", i)
+			return nil
+		}
+		fmt.Printf("fail: executed actionFunc() with i = %d\n", i)
+		return fmt.Errorf("Error. i too high: %d", i)
+	}
+	conditionFunc := func(e error) bool { return e != nil }
+	for i < 6 {
+		i++
+		shouldAttempt := 2
+		attempts, err := Try(actionFunc, shouldAttempt, time.Millisecond, conditionFunc)
+		if i < 5 {
+			if attempts != 1 {
+				t.Fatalf("Expected attempts: %d, received: %d", 1, attempts)
+			}
+		} else {
+			if err == nil {
+				t.Fatalf("Expected error, received nil")
+			}
+			if attempts != shouldAttempt {
+				t.Fatalf("Expected attempts: %d, received: %d", shouldAttempt, attempts)
+			}
 		}
 	}
 }
