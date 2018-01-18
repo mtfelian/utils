@@ -677,3 +677,26 @@ func Try(actionFunc func() error, n int, delay time.Duration, conditionFunc func
 	}
 	return i, err
 }
+
+// MustSelfPath returns path to this application executable, it panic at error
+func MustSelfPath() string {
+	selfPath, err := GetSelfPath()
+	if err != nil {
+		panic(err)
+	}
+	return selfPath
+}
+
+// SubstringBetween returns a substring between substrs l and r from source string s
+func SubstringBetween(s, l, r string) string {
+	i := strings.Index(s, l)
+	if i == -1 {
+		return ""
+	}
+	i += len(l)
+	j := strings.Index(s[i:], r)
+	if j < 0 {
+		return ""
+	}
+	return s[i : j+i]
+}

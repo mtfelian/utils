@@ -2,12 +2,52 @@ package gost
 
 import (
 	"fmt"
-	"github.com/mihteh/utils"
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"testing"
+
+	"github.com/mtfelian/utils"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 )
+
+var _ = Describe("Testing with Ginkgo", func() {
+	AfterEach(func() { cleanup() })
+
+	It("checks SignDER", func() {
+		if utils.IsInVexor() {
+			fmt.Println("No GOST OpenSSL in Vexor")
+			return
+		}
+
+		createTestFile()
+
+		testFileIn := filepath.Join(testPath, testFile)
+		testFileOut := testFileIn + ".sgn"
+
+		signer := NewGostSignerEncryptor(getSSLParams())
+		Expect(signer.SignDER(testFileIn, testFileOut)).To(Succeed())
+		Expect(utils.FileExists(testFileOut)).To(BeTrue())
+		Expect(readData(&decryptedData)).To(Succeed())
+	})
+
+	It("encrypt", func() {
+		if utils.IsInVexor() {
+			fmt.Println("No GOST OpenSSL in Vexor")
+			return
+		}
+
+		createTestFile()
+
+		testFileIn := filepath.Join(testPath, testFile)
+		testFileOut := testFileIn + ".enc"
+
+		signer := NewGostSignerEncryptor(getSSLParams())
+		Expect(signer.Encrypt(testFileIn, testFileOut)).To(Succeed())
+		Expect(utils.FileExists(testFileOut)).To(BeTrue())
+		Expect(readData(&decryptedData)).To(Succeed())
+	})
+})
 
 const testDir = "test"
 
@@ -42,15 +82,8 @@ var (
 	decryptedData []byte
 )
 
-func TestMain(m *testing.M) {
-	os.Exit(m.Run())
-}
+func removeTestFiles() error { return os.RemoveAll(testPath) }
 
-func removeTestFiles() error {
-	return os.RemoveAll(testPath)
-}
-
-// readData читает данные из получившегося в результате проверяемых манипуляций файла в тестовые переменные
 func readData(into *[]byte) error {
 	*into = []byte{}
 	p := filepath.Join(testPath, testFile)
@@ -69,18 +102,12 @@ func readData(into *[]byte) error {
 	return nil
 }
 
-// writeTestCerts записывает тестовый приватный ключ и сертификат
-func writeTestCerts(t *testing.T) {
-	if err := ioutil.WriteFile(filepath.Join(testPath, "private.pem"), []byte(testPrivateKey), 0660); err != nil {
-		t.Fatal(err)
-	}
-	if err := ioutil.WriteFile(filepath.Join(testPath, "cert.cer"), []byte(testCertificate), 0660); err != nil {
-		t.Fatal(err)
-	}
+func writeTestCerts() {
+	Expect(ioutil.WriteFile(filepath.Join(testPath, "private.pem"), []byte(testPrivateKey), 0660)).To(Succeed())
+	Expect(ioutil.WriteFile(filepath.Join(testPath, "cert.cer"), []byte(testCertificate), 0660)).To(Succeed())
 }
 
-// createTestFile создаёт тестовый файл
-func createTestFile(t *testing.T) {
+func createTestFile() {
 	binPath, err := utils.GetSelfPath()
 	if err != nil {
 		fmt.Errorf("Ошибка получения пути к приложению: %v\n", err)
@@ -99,19 +126,13 @@ func createTestFile(t *testing.T) {
 
 	file1Name := "file1"
 	file1Path := filepath.Join(testPath, file1Name)
-	if err := ioutil.WriteFile(file1Path, []byte("file1data"), 0660); err != nil {
-		t.Fatal(err)
-	}
+	Expect(ioutil.WriteFile(file1Path, []byte("file1data"), 0660)).To(Succeed())
 	testFile = file1Name
 
-	if err := readData(&sourceData); err != nil {
-		t.Fatal(err)
-	}
-
-	writeTestCerts(t)
+	Expect(readData(&sourceData)).To(Succeed())
+	writeTestCerts()
 }
 
-// getSSLParams возвращает параметры SSL для теста
 func getSSLParams() SSLParams {
 	return SSLParams{
 		OpenSSLPath:         "/gost-ssl/bin/openssl",
@@ -121,63 +142,4 @@ func getSSLParams() SSLParams {
 	}
 }
 
-// cleanup сбрасывает тестовые переменные и удаляет тестовые файлы и директории
-func cleanup() {
-	removeTestFiles()
-}
-
-func TestSignDER(t *testing.T) {
-	if utils.IsInVexor() {
-		fmt.Println("No GOST OpenSSL in Vexor")
-		return
-	}
-
-	defer cleanup()
-	createTestFile(t)
-
-	testFileIn := filepath.Join(testPath, testFile)
-	testFileOut := testFileIn + ".sgn"
-
-	signer := NewGostSignerEncryptor(getSSLParams())
-	if err := signer.SignDER(testFileIn, testFileOut); err != nil {
-		t.Fatalf("Ошибка SignDER(): %v", err)
-	}
-
-	// проверяем только что подписанный файл существует и его получается прочитать
-	if !utils.FileExists(testFileOut) {
-		t.Errorf("Файл %s должен быть распакован, но не найден.\n", testFileOut)
-	}
-	if err := readData(&decryptedData); err != nil {
-		t.Error(err)
-	}
-
-	// todo хорошо бы проверить снятие подписи
-}
-
-func TestEncrypt(t *testing.T) {
-	if utils.IsInVexor() {
-		fmt.Println("No GOST OpenSSL in Vexor")
-		return
-	}
-
-	defer cleanup()
-	createTestFile(t)
-
-	testFileIn := filepath.Join(testPath, testFile)
-	testFileOut := testFileIn + ".enc"
-
-	signer := NewGostSignerEncryptor(getSSLParams())
-	if err := signer.Encrypt(testFileIn, testFileOut); err != nil {
-		t.Fatalf("Ошибка SignDER(): %v", err)
-	}
-
-	// проверяем только что подписанный файл существует и его получается прочитать
-	if !utils.FileExists(testFileOut) {
-		t.Errorf("Файл %s должен быть распакован, но не найден.\n", testFileOut)
-	}
-	if err := readData(&decryptedData); err != nil {
-		t.Error(err)
-	}
-
-	// todo хорошо бы проверить расшифровку
-}
+func cleanup() { removeTestFiles() }

@@ -2,10 +2,11 @@ package gost
 
 import (
 	"fmt"
-	"github.com/mihteh/utils"
-	"github.com/mihteh/utils/encrypt"
 	"os"
 	"os/exec"
+
+	"github.com/mtfelian/utils"
+	"github.com/mtfelian/utils/encrypt"
 )
 
 type SSLParams struct {
@@ -15,13 +16,9 @@ type SSLParams struct {
 	OurPrivateKey       string // путь к нашему приватному ключу
 }
 
-type gostSSL struct {
-	params SSLParams
-}
+type gostSSL struct{ params SSLParams }
 
-func (s gostSSL) getParams() SSLParams {
-	return s.params
-}
+func (s gostSSL) getParams() SSLParams { return s.params }
 
 // NewGostSignerEncryptor создаёт новый объект для подписи
 func NewGostSignerEncryptor(params SSLParams) encrypt.SignerEncryptor {
@@ -29,49 +26,28 @@ func NewGostSignerEncryptor(params SSLParams) encrypt.SignerEncryptor {
 		fmt.Println("Не удаётся получить доступ к openSSL по заданному пути.")
 		os.Exit(1)
 	}
-
-	return &gostSSL{
-		params: params,
-	}
+	return &gostSSL{params: params}
 }
 
 // SignDER подписывает файл с путём fileIn в формате DER
 // содержимое вместе с цифровой подписью записывается в файл с путём fileOut
 func (s gostSSL) SignDER(fileIn string, fileOut string) error {
 	// Пример командной строки:
-	// /gost-ssl/bin/openssl smime -sign -nodetach -signer certs/kakunin/kakunin.cer -inkey private.pem \
+	// /gost-ssl/bin/openssl smime -sign -nodetach -signer certs/dirname/dirname.cer -inkey private.pem \
 	// -engine gost -gost89 -binary -noattr -outform DER -in test.xml -out test.xml.sgn
 	p := s.getParams()
 	cmdParams := []string{
-		"smime",
-		"-sign",
-		"-nodetach",
-		"-signer",
-		p.OurCertFilePath,
-		"-inkey",
-		p.OurPrivateKey,
-		"-engine",
-		"gost",
-		"-gost89",
-		"-binary",
-		"-noattr",
-		"-outform",
-		"DER",
-		"-in",
-		fileIn,
-		"-out",
-		fileOut,
+		"smime", "-sign", "-nodetach", "-signer", p.OurCertFilePath, "-inkey", p.OurPrivateKey,
+		"-engine", "gost", "-gost89", "-binary", "-noattr", "-outform", "DER",
+		"-in", fileIn,
+		"-out", fileOut,
 	}
 
 	cmd := exec.Command(s.getParams().OpenSSLPath, cmdParams...)
 	// в первом параметре вывод команды
 	_, err := cmd.CombinedOutput()
 	//fmt.Println(string(output))
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
 // Encrypt шифрует файл с путём fileIn в формат DER
@@ -82,28 +58,13 @@ func (s gostSSL) Encrypt(fileIn string, fileOut string) error {
 	// -out test.xml.sgn.enc certs/equifax1617/Боевой\ сервер/Prod_Equifax_2016-2017.cer
 	p := s.getParams()
 	cmdParams := []string{
-		"smime",
-		"-encrypt",
-		"-engine",
-		"gost",
-		"-gost89",
-		"-in",
-		fileIn,
-		"-binary",
-		"-outform",
-		"der",
-		"-out",
-		fileOut,
-		p.ForeignCertFilePath,
+		"smime", "-encrypt", "-engine", "gost", "-gost89", "-in", fileIn, "-binary", "-outform", "der",
+		"-out", fileOut, p.ForeignCertFilePath,
 	}
 
 	cmd := exec.Command(s.getParams().OpenSSLPath, cmdParams...)
 	// в первом параметре вывод команды
 	_, err := cmd.CombinedOutput()
 	//fmt.Println(string(output))
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }

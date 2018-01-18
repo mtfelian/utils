@@ -11,8 +11,7 @@ type HttpCookies []*http.Cookie
 func New(cookie string) HttpCookies {
 	header := http.Header{}
 	header.Add("Cookie", cookie)
-	request := http.Request{Header: header}
-	return request.Cookies()
+	return (&http.Request{Header: header}).Cookies()
 }
 
 // Get returns a cookie with Name equals to key

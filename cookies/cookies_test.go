@@ -1,81 +1,66 @@
 package cookies
 
 import (
-	"testing"
+	"fmt"
+
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 )
 
-type nameValue map[string]string
+var _ = Describe("Testing with Ginkgo", func() {
+	cookiesString := "token=tokenString;murka= murkaString; zhmurka=aga"
+	type nameValue map[string]string
 
-var (
-	cookiesString = "token=tokenString;murka= murkaString; zhmurka=aga"
-)
+	It("checks New", func() {
+		cookies := New(cookiesString)
+		Expect(cookies).To(HaveLen(3))
 
-// TestNewGet checks cookies string parsing and get by key
-func TestNewGet(t *testing.T) {
-	cookies := New(cookiesString)
-	if len(cookies) != 3 {
-		t.Fatalf("Expected slice size %d, received %d", 3, len(cookies))
-	}
-
-	expectedNewResult := nameValue{
-		"token":   "tokenString",
-		"murka":   " murkaString",
-		"zhmurka": "aga",
-	}
-
-	for _, cookie := range cookies {
-		if expectedNewResult[cookie.Name] != cookie.Value {
-			t.Fatalf("Cookie with name %s, expected: %s, received: %s",
-				cookie.Name, expectedNewResult[cookie.Name], cookie.Value)
+		expectedNewResult := nameValue{
+			"token":   "tokenString",
+			"murka":   " murkaString",
+			"zhmurka": "aga",
 		}
-	}
-}
 
-// TestGet tests getting cookie
-func TestGet(t *testing.T) {
-	cookies := New(cookiesString)
-	expectedGetResult := nameValue{
-		"token":   "tokenString",
-		"murka":   " murkaString",
-		"zhmurka": "aga",
-		"q":       "",
-		"":        "",
-	}
+		for i, cookie := range cookies {
+			By(fmt.Sprintf("testing case %d", i))
+			Expect(cookie.Value).To(Equal(expectedNewResult[cookie.Name]))
+		}
+	})
 
-	for key, expectedValue := range expectedGetResult {
-		receivedCookie := cookies.Get(key)
+	It("checks Get", func() {
+		cookies := New(cookiesString)
+		expectedGetResult := nameValue{
+			"token":   "tokenString",
+			"murka":   " murkaString",
+			"zhmurka": "aga",
+			"q":       "",
+			"":        "",
+		}
 
-		if expectedValue == "" {
-			if receivedCookie != nil {
-				t.Fatalf("Get by name %s, expected value: %s, received not nil cookie: %s",
-					key, expectedValue, receivedCookie.Value)
+		for key, expectedValue := range expectedGetResult {
+			By(fmt.Sprintf("testing case %s: %s", key, expectedValue))
+			receivedCookie := cookies.Get(key)
+			if expectedValue == "" {
+				Expect(receivedCookie).To(BeNil())
+				continue
 			}
-			continue
+			Expect(receivedCookie.Value).To(Equal(expectedValue))
+		}
+	})
+
+	It("checks GetValue", func() {
+		cookies := New(cookiesString)
+		expectedGetResult := nameValue{
+			"token":   "tokenString",
+			"murka":   " murkaString",
+			"zhmurka": "aga",
+			"q":       "",
+			"":        "",
 		}
 
-		if receivedCookie.Value != expectedValue {
-			t.Fatalf("Get by name %s, expected value: %s, received value: %s",
-				key, expectedValue, receivedCookie.Value)
+		for key, expectedValue := range expectedGetResult {
+			By(fmt.Sprintf("testing case %s: %s", key, expectedValue))
+			Expect(cookies.GetValue(key)).To(Equal(expectedValue))
 		}
-	}
-}
-
-// TestGetValue tests getting cookie value
-func TestGetValue(t *testing.T) {
-	cookies := New(cookiesString)
-	expectedGetResult := nameValue{
-		"token":   "tokenString",
-		"murka":   " murkaString",
-		"zhmurka": "aga",
-		"q":       "",
-		"":        "",
-	}
-
-	for key, expectedValue := range expectedGetResult {
-		receivedCookie := cookies.GetValue(key)
-		if receivedCookie != expectedValue {
-			t.Fatalf("Get by name %s, expected value: %s, received value: %s",
-				key, expectedValue, receivedCookie)
-		}
-	}
-}
+	})
+})
