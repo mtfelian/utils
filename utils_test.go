@@ -405,3 +405,110 @@ var _ = Describe("Testing with Ginkgo", func() {
 	})
 
 })
+
+var _ = Describe("Between func", func() {
+	It("works", func() {
+		testCases := []struct {
+			source string
+			l, r   string
+			result string
+		}{
+			{
+				source: "12345687890",
+				l:      "2", r: "45",
+				result: "3",
+			},
+			{
+				source: "12345687890",
+				l:      "45", r: "45",
+				result: "",
+			},
+			{
+				source: "12345687890",
+				l:      "45", r: "2",
+				result: "",
+			},
+			{
+				source: "11111111",
+				l:      "1", r: "11",
+				result: "",
+			},
+			{
+				source: "111222333111",
+				l:      "111", r: "333",
+				result: "222",
+			},
+			{
+				source: "111222333111",
+				l:      "222", r: "111",
+				result: "333",
+			},
+			{
+				source: "",
+				l:      "111", r: "333",
+				result: "",
+			},
+			{
+				source: "",
+				l:      "", r: "",
+				result: "",
+			},
+		}
+
+		for i, tc := range testCases {
+			By(fmt.Sprintf("testing %d case, source: %s", i, tc.source))
+			Expect(SubstringBetween(tc.source, tc.l, tc.r)).To(Equal(tc.result))
+		}
+	})
+})
+
+var _ = Describe("AddBakExtension func", func() {
+	It("works", func() {
+		testCases := []struct {
+			fileName string
+			bakExt   string
+			result   string
+		}{
+			{
+				fileName: "/a/b/c/bak/a",
+				bakExt:   "bak",
+				result:   "/a/b/c/bak/a.bak1",
+			},
+			{
+				fileName: "/a/b/c/bak/a.bak",
+				bakExt:   "bak",
+				result:   "/a/b/c/bak/a.bak1",
+			},
+			{
+				fileName: "/a/b/c/bak/a.bak1",
+				bakExt:   "bak",
+				result:   "/a/b/c/bak/a.bak2",
+			},
+			{
+				fileName: "/a/b/c/bak/",
+				bakExt:   "bak",
+				result:   "/a/b/c/bak/.bak1",
+			},
+			{
+				fileName: "/a/b/c/bak/a.bak",
+				bakExt:   "",
+				result:   "/a/b/c/bak/a.bak1",
+			},
+			{
+				fileName: "/a/b/c/bak/a.bak1",
+				bakExt:   "ext",
+				result:   "/a/b/c/bak/a.bak1.ext1",
+			},
+			{
+				fileName: "a.bak",
+				bakExt:   "bak",
+				result:   "a.bak1",
+			},
+		}
+
+		for i, tc := range testCases {
+			By(fmt.Sprintf("testing %d case, fileName: %s", i, tc.fileName))
+			Expect(AddBakExtension(tc.fileName, tc.bakExt)).To(Equal(tc.result))
+		}
+	})
+})

@@ -98,7 +98,7 @@ func Round(val float64, roundOn float64, places int) float64 {
 func FormatPhone(phone string) (string, error) {
 	// форматируем строку с телефоном
 	res := phone
-	reg, err := regexp.Compile(`[\(\).,;#*А-яA-z\s+-]*`)
+	reg, err := regexp.Compile(`[().,;#*А-яA-z\s+-]*`)
 	if err != nil {
 		return phone, err
 	}
@@ -110,7 +110,7 @@ func FormatPhone(phone string) (string, error) {
 		return phone, errors.New("Слишком короткий номер телефона")
 	}
 	if res[:1] == "8" {
-		res = "7" + res[1:len(res)]
+		res = "7" + res[1:]
 	}
 	return res, nil
 }
@@ -637,7 +637,7 @@ func StringToUintSlice(s string, sep string, min uint) ([]uint, error) {
 // empty elements are ignored
 func StringToStringSlice(s, sep string) []string {
 	output := []string{}
-	stringElements := strings.Split(s, ",")
+	stringElements := strings.Split(s, sep)
 	for _, element := range stringElements {
 		element = strings.TrimSpace(element)
 		if element != "" {
@@ -699,4 +699,43 @@ func SubstringBetween(s, l, r string) string {
 		return ""
 	}
 	return s[i : j+i]
+}
+
+// AppendFile with given path
+func AppendFile(path string) (*os.File, error) {
+	if !FileExists(path) { // create it
+		f, err := os.Create(path)
+		if err != nil {
+			return f, err
+		}
+		if _, err := f.Write([]byte{0}); err != nil {
+			return f, err
+		}
+		if err := f.Close(); err != nil {
+			return f, err
+		}
+	}
+
+	return os.OpenFile(path, os.O_APPEND|os.O_WRONLY, 0600)
+}
+
+// AddBakExtension adds/changes a bakExt extension with numeric index extension to fileName
+func AddBakExtension(fileName, bakExt string) string {
+	const defaultBakExt = "bak"
+	if bakExt == "" {
+		bakExt = defaultBakExt
+	}
+	ext, re := filepath.Ext(fileName), regexp.MustCompile(fmt.Sprintf(`^\.%s(\d*)$`, bakExt))
+	if !re.MatchString(ext) {
+		return fmt.Sprintf("%s.%s1", fileName, bakExt)
+	}
+	submatch := re.FindStringSubmatch(ext)
+	if len(submatch) != 2 {
+		panic("something wrong, len of submatch is not 2")
+	}
+	i, err := strconv.Atoi(submatch[1])
+	if err != nil {
+		i = 0 // means no number
+	}
+	return strings.TrimSuffix(fileName, ext) + fmt.Sprintf(".%s%d", bakExt, i+1)
 }
