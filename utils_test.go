@@ -462,53 +462,71 @@ var _ = Describe("Between func", func() {
 	})
 })
 
-var _ = Describe("AddBakExtension func", func() {
+var _ = Describe("BackupFileName func", func() {
 	It("works", func() {
 		testCases := []struct {
-			fileName string
-			bakExt   string
-			result   string
+			createFiles       []string
+			inputFileName     string
+			inputExtension    string
+			resultingFileName string
 		}{
 			{
-				fileName: "/a/b/c/bak/a",
-				bakExt:   "bak",
-				result:   "/a/b/c/bak/a.bak1",
+				createFiles:       []string{"a"},
+				inputFileName:     "a",
+				inputExtension:    "bak",
+				resultingFileName: "a.bak1",
 			},
 			{
-				fileName: "/a/b/c/bak/a.bak",
-				bakExt:   "bak",
-				result:   "/a/b/c/bak/a.bak1",
+				createFiles:       []string{"a", "a.bak1"},
+				inputFileName:     "a",
+				inputExtension:    "bak",
+				resultingFileName: "a.bak2",
 			},
 			{
-				fileName: "/a/b/c/bak/a.bak1",
-				bakExt:   "bak",
-				result:   "/a/b/c/bak/a.bak2",
+				createFiles:       []string{"a", "a.bak"},
+				inputFileName:     "a.bak",
+				inputExtension:    "bak",
+				resultingFileName: "a.bak1",
 			},
 			{
-				fileName: "/a/b/c/bak/",
-				bakExt:   "bak",
-				result:   "/a/b/c/bak/.bak1",
+				createFiles:       []string{"a", "a.bak", "a.bak1"},
+				inputFileName:     "a.bak1",
+				inputExtension:    "bak",
+				resultingFileName: "a.bak2",
 			},
 			{
-				fileName: "/a/b/c/bak/a.bak",
-				bakExt:   "",
-				result:   "/a/b/c/bak/a.bak1",
+				createFiles:       []string{"a", "a.bak"},
+				inputFileName:     "a.bak",
+				inputExtension:    "",
+				resultingFileName: "a.bak1",
 			},
 			{
-				fileName: "/a/b/c/bak/a.bak1",
-				bakExt:   "ext",
-				result:   "/a/b/c/bak/a.bak1.ext1",
+				createFiles:       []string{"a", "a.bak", "a.bak1"},
+				inputFileName:     "a.bak1",
+				inputExtension:    "ext",
+				resultingFileName: "a.bak1.ext1",
 			},
 			{
-				fileName: "a.bak",
-				bakExt:   "bak",
-				result:   "a.bak1",
+				createFiles:       []string{"a", "a.bak"},
+				inputFileName:     "a.bak",
+				inputExtension:    "bak",
+				resultingFileName: "a.bak1",
 			},
 		}
 
+		selfPath := MustSelfPath()
 		for i, tc := range testCases {
-			By(fmt.Sprintf("testing %d case, fileName: %s", i, tc.fileName))
-			Expect(AddBakExtension(tc.fileName, tc.bakExt)).To(Equal(tc.result))
+			By(fmt.Sprintf("testing %d case, inputFileName: %s", i, tc.inputFileName))
+			// creating files
+			for _, fn := range tc.createFiles {
+				Expect(ioutil.WriteFile(filepath.Join(selfPath, fn), []byte{}, 0660)).To(Succeed())
+			}
+			Expect(BackupFileName(filepath.Join(selfPath, tc.inputFileName), tc.inputExtension)).
+				To(Equal(filepath.Join(selfPath, tc.resultingFileName)))
+			// removing files
+			for _, fn := range tc.createFiles {
+				Expect(os.Remove(filepath.Join(selfPath, fn))).To(Succeed())
+			}
 		}
 	})
 })

@@ -703,12 +703,9 @@ func SubstringBetween(s, l, r string) string {
 
 // AppendFile with given path
 func AppendFile(path string) (*os.File, error) {
-	if !FileExists(path) { // create it
+	if !FileExists(path) { // createFiles it
 		f, err := os.Create(path)
 		if err != nil {
-			return f, err
-		}
-		if _, err := f.Write([]byte{0}); err != nil {
 			return f, err
 		}
 		if err := f.Close(); err != nil {
@@ -719,23 +716,27 @@ func AppendFile(path string) (*os.File, error) {
 	return os.OpenFile(path, os.O_APPEND|os.O_WRONLY, 0600)
 }
 
-// AddBakExtension adds/changes a bakExt extension with numeric index extension to fileName
-func AddBakExtension(fileName, bakExt string) string {
+// BackupFileName returns a new name for inputFileName and backup extension,
+// also checking the existence of other bak files with intention not to overwrite it when renaming to new name
+func BackupFileName(path, extension string) string {
 	const defaultBakExt = "bak"
-	if bakExt == "" {
-		bakExt = defaultBakExt
+	if extension == "" {
+		extension = defaultBakExt
 	}
-	ext, re := filepath.Ext(fileName), regexp.MustCompile(fmt.Sprintf(`^\.%s(\d*)$`, bakExt))
-	if !re.MatchString(ext) {
-		return fmt.Sprintf("%s.%s1", fileName, bakExt)
+	fExt, re := filepath.Ext(path), regexp.MustCompile(fmt.Sprintf(`^\.%s(\d*)$`, extension))
+	fName := func(n int) string { return fmt.Sprintf("%s.%s%d", strings.TrimSuffix(path, fExt), extension, n) }
+	if !re.MatchString(fExt) && !FileExists(fName(1)) {
+		return fmt.Sprintf("%s.%s1", path, extension)
 	}
-	submatch := re.FindStringSubmatch(ext)
-	if len(submatch) != 2 {
-		panic("something wrong, len of submatch is not 2")
+	submatch, i := re.FindStringSubmatch(fExt), 1
+	if len(submatch) == 2 {
+		var err error
+		i, err = strconv.Atoi(submatch[1])
+		if err != nil {
+			i = 1 // reset it
+		}
 	}
-	i, err := strconv.Atoi(submatch[1])
-	if err != nil {
-		i = 0 // means no number
+	for ; FileExists(fName(i)); i++ {
 	}
-	return strings.TrimSuffix(fileName, ext) + fmt.Sprintf(".%s%d", bakExt, i+1)
+	return fName(i)
 }
