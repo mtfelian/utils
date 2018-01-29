@@ -286,20 +286,29 @@ func RenderFloat(format string, n float64) (string, error) {
 	return signStr + intStr + decimalStr + fracStr, nil
 }
 
-// todo документация
+// todo document it
 func RenderInteger(format string, n int64) (string, error) {
 	return RenderFloat(format, float64(n))
 }
 
-// GetSelfPath возвращает путь к исполняемому файлу. Или ошибку
+// GetSelfPath returns a path to the caller executable
 func GetSelfPath() (string, error) {
 	return filepath.Abs(filepath.Dir(os.Args[0]))
 }
 
-// FileExists возвращает true если файл с путём существует. Иначе false
+// FileExists returns true if a file with given path exists
 func FileExists(path string) bool {
 	_, err := os.Stat(path)
 	return !os.IsNotExist(err)
+}
+
+// FileSize returns size of a file with given path, it returns 0 if file doesn't exists or on error
+func FileSize(path string) int64 {
+	fileInfo, err := os.Stat(path)
+	if err != nil {
+		return 0
+	}
+	return fileInfo.Size()
 }
 
 // IsDir возвращает true если указанный путь является директорией, иначе false

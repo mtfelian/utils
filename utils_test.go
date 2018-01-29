@@ -125,6 +125,18 @@ var _ = Describe("Testing with Ginkgo", func() {
 		Expect(FileExists(fileName)).To(BeFalse())
 	})
 
+	It("checks FileSize", func() {
+		binPath := MustSelfPath()
+		fileName := filepath.Join(binPath, "test.txt")
+		defer os.Remove(fileName)
+
+		content := "test\ntest"
+		Expect(ioutil.WriteFile(fileName, []byte(content), 0660)).To(Succeed())
+		Expect(FileSize(fileName)).To(BeNumerically("==", len(content)))
+		Expect(os.Remove(fileName)).To(Succeed())
+		Expect(FileSize(fileName)).To(BeNumerically("==", 0))
+	})
+
 	Context("IsDir()", func() {
 		It("should be false", func() {
 			binPath := MustSelfPath()
