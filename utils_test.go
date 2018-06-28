@@ -285,6 +285,7 @@ var _ = Describe("Testing with Ginkgo", func() {
 			{interface{}("2"), interface{}([]string{"1", "3", "4", "5"}), false},
 			{interface{}("2"), interface{}([]string{}), false},
 			{interface{}("2"), interface{}([]string{"2"}), true},
+			{interface{}("2"), interface{}([]string(nil)), false},
 		}
 
 		for i, value := range testData {
