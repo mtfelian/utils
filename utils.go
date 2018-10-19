@@ -502,9 +502,23 @@ func GetFunctionName(function interface{}) (string, error) {
 	return fName, nil
 }
 
-// RemoveDuplicates удаляет повторные значения из среза s
-func RemoveDuplicates(s *[]uint) {
+// RemoveDuplicatesUint удаляет повторные значения из среза s
+func RemoveDuplicatesUint(s *[]uint) {
 	found := make(map[uint]bool)
+	j := 0
+	for i, element := range *s {
+		if !found[element] {
+			found[element] = true
+			(*s)[j] = (*s)[i]
+			j++
+		}
+	}
+	*s = (*s)[:j]
+}
+
+// RemoveDuplicatesString удаляет повторные значения из среза s
+func RemoveDuplicatesString(s *[]string) {
+	found := make(map[string]bool)
 	j := 0
 	for i, element := range *s {
 		if !found[element] {

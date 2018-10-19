@@ -543,3 +543,46 @@ var _ = Describe("BackupFileName func", func() {
 		}
 	})
 })
+
+var _ = Describe("RemoveDuplicatesUint func", func() {
+	It("works", func() {
+		testCases := []struct {
+			slice          []uint
+			expectedResult []uint
+		}{
+			{slice: []uint{}, expectedResult: []uint{}},
+			{slice: []uint{1}, expectedResult: []uint{1}},
+			{slice: []uint{2, 1}, expectedResult: []uint{2, 1}},
+			{slice: []uint{2, 2}, expectedResult: []uint{2}},
+			{slice: []uint{3, 2, 2, 3, 2}, expectedResult: []uint{3, 2}},
+			{slice: []uint{2, 3, 3, 2, 3}, expectedResult: []uint{2, 3}},
+		}
+		for i, tc := range testCases {
+			By(fmt.Sprintf("testing %d case, slice: %v", i, tc.slice))
+			RemoveDuplicatesUint(&tc.slice)
+			Expect(tc.slice).To(Equal(tc.expectedResult))
+		}
+	})
+})
+
+var _ = Describe("RemoveDuplicatesString func", func() {
+	It("works", func() {
+		testCases := []struct {
+			slice          []string
+			expectedResult []string
+		}{
+			{slice: []string{}, expectedResult: []string{}},
+			{slice: []string{"1"}, expectedResult: []string{"1"}},
+			{slice: []string{"2", "1"}, expectedResult: []string{"2", "1"}},
+			{slice: []string{"2", "2"}, expectedResult: []string{"2"}},
+			{slice: []string{" 2", "2", "2 "}, expectedResult: []string{" 2", "2", "2 "}},
+			{slice: []string{"3", "2", "2", "3", "2"}, expectedResult: []string{"3", "2"}},
+			{slice: []string{"2", "3", "3", "2", "3"}, expectedResult: []string{"2", "3"}},
+		}
+		for i, tc := range testCases {
+			By(fmt.Sprintf("testing %d case, slice: %v", i, tc.slice))
+			RemoveDuplicatesString(&tc.slice)
+			Expect(tc.slice).To(Equal(tc.expectedResult))
+		}
+	})
+})
