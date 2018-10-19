@@ -544,8 +544,8 @@ var _ = Describe("BackupFileName func", func() {
 	})
 })
 
-var _ = Describe("RemoveDuplicatesUint func", func() {
-	It("works", func() {
+var _ = Describe("RemoveDuplicates func", func() {
+	It("works for []uint", func() {
 		testCases := []struct {
 			slice          []uint
 			expectedResult []uint
@@ -559,14 +559,35 @@ var _ = Describe("RemoveDuplicatesUint func", func() {
 		}
 		for i, tc := range testCases {
 			By(fmt.Sprintf("testing %d case, slice: %v", i, tc.slice))
-			RemoveDuplicatesUint(&tc.slice)
-			Expect(tc.slice).To(Equal(tc.expectedResult))
+			result, hadNaN, err := RemoveDuplicates(tc.slice)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(hadNaN).To(BeFalse())
+			Expect(result.([]uint)).To(Equal(tc.expectedResult))
 		}
 	})
-})
 
-var _ = Describe("RemoveDuplicatesString func", func() {
-	It("works", func() {
+	It("works for []int", func() {
+		testCases := []struct {
+			slice          []int
+			expectedResult []int
+		}{
+			{slice: []int{}, expectedResult: []int{}},
+			{slice: []int{1}, expectedResult: []int{1}},
+			{slice: []int{2, 1}, expectedResult: []int{2, 1}},
+			{slice: []int{2, 2}, expectedResult: []int{2}},
+			{slice: []int{3, 2, 2, 3, 2}, expectedResult: []int{3, 2}},
+			{slice: []int{2, 3, 3, 2, 3}, expectedResult: []int{2, 3}},
+		}
+		for i, tc := range testCases {
+			By(fmt.Sprintf("testing %d case, slice: %v", i, tc.slice))
+			result, hadNaN, err := RemoveDuplicates(tc.slice)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(hadNaN).To(BeFalse())
+			Expect(result.([]int)).To(Equal(tc.expectedResult))
+		}
+	})
+
+	It("works for []string", func() {
 		testCases := []struct {
 			slice          []string
 			expectedResult []string
@@ -581,8 +602,10 @@ var _ = Describe("RemoveDuplicatesString func", func() {
 		}
 		for i, tc := range testCases {
 			By(fmt.Sprintf("testing %d case, slice: %v", i, tc.slice))
-			RemoveDuplicatesString(&tc.slice)
-			Expect(tc.slice).To(Equal(tc.expectedResult))
+			result, hadNaN, err := RemoveDuplicates(tc.slice)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(hadNaN).To(BeFalse())
+			Expect(result.([]string)).To(Equal(tc.expectedResult))
 		}
 	})
 })

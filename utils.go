@@ -502,32 +502,44 @@ func GetFunctionName(function interface{}) (string, error) {
 	return fName, nil
 }
 
-// RemoveDuplicatesUint удаляет повторные значения из среза s
-func RemoveDuplicatesUint(s *[]uint) {
-	found := make(map[uint]bool)
-	j := 0
-	for i, element := range *s {
-		if !found[element] {
-			found[element] = true
-			(*s)[j] = (*s)[i]
-			j++
-		}
+// RemoveDuplicates returns a slice with duplicates removed. It omits NaN values
+// and returns true in second parameter if a NaN value were found.
+func RemoveDuplicates(slice interface{}) (interface{}, bool, error) {
+	v := reflect.ValueOf(slice)
+	if !v.IsValid() {
+		return nil, false, errors.New("argument is not valid")
 	}
-	*s = (*s)[:j]
-}
+	if k := v.Kind(); k != reflect.Array && k != reflect.Slice {
+		return nil, false, errors.New("argument should be an array or a slice")
+	}
 
-// RemoveDuplicatesString удаляет повторные значения из среза s
-func RemoveDuplicatesString(s *[]string) {
-	found := make(map[string]bool)
-	j := 0
-	for i, element := range *s {
-		if !found[element] {
-			found[element] = true
-			(*s)[j] = (*s)[i]
-			j++
+	elemType := v.Type().Elem()
+	intType := reflect.TypeOf(int(0))
+	mapType := reflect.MapOf(elemType, intType)
+	m, i := reflect.MakeMap(mapType), 0
+	for j := 0; j < v.Len(); j++ {
+		x := v.Index(j)
+		if m.MapIndex(x).IsValid() {
+			continue
+		}
+		m.SetMapIndex(x, reflect.ValueOf(i))
+		if m.MapIndex(x).IsValid() {
+			i++
 		}
 	}
-	*s = (*s)[:j]
+
+	sliceType := reflect.SliceOf(elemType)
+	result, hadNaN := reflect.MakeSlice(sliceType, i, i), false
+	for _, key := range m.MapKeys() {
+		ival := m.MapIndex(key)
+		if !ival.IsValid() {
+			hadNaN = true
+			continue
+		}
+		result.Index(int(ival.Int())).Set(key)
+	}
+
+	return result.Interface(), hadNaN, nil
 }
 
 // UintSlice attaches the methods of sort.Interface to []uint, sorting in increasing order.
