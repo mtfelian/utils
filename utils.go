@@ -3,6 +3,7 @@ package utils
 import (
 	"bytes"
 	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"math"
@@ -720,6 +721,16 @@ func MustSelfPath() string {
 		panic(err)
 	}
 	return selfPath
+}
+
+// MarshalUnmarshalJSON marshals data to JSON and unmarshal it to out.
+// Useful to convert interface{} to something more concrete via JSON
+func MarshalUnmarshalJSON(data, out interface{}) error {
+	b, err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(b, &out)
 }
 
 // SubstringBetween returns a substring between substrs l and r from source string s

@@ -609,3 +609,46 @@ var _ = Describe("RemoveDuplicates func", func() {
 		}
 	})
 })
+
+var _ = Describe("MarshalUnmarshalJSON func", func() {
+	It("checks it", func() {
+		type dataNested struct {
+			NestedValue1 string `json:"nv1"`
+			NestedValue2 int    `json:"nv2"`
+		}
+		type data struct {
+			Key1 string     `json:"key1"`
+			Key2 dataNested `json:"key2"`
+		}
+		for i, tc := range []struct {
+			jsonData       interface{}
+			expectedResult data
+			err            bool
+		}{
+			{
+				jsonData: map[string]interface{}{
+					"key1": "value",
+					"key2": map[string]interface{}{"nv1": "v1", "nv2": 7},
+				},
+				expectedResult: data{Key1: "value", Key2: dataNested{NestedValue1: "v1", NestedValue2: 7}},
+			}, // 0
+			{jsonData: nil, expectedResult: data{}},          // 1
+			{jsonData: 7, expectedResult: data{}, err: true}, // 2
+			{
+				jsonData:       map[string]interface{}{"key1": "value", "key2": 7},
+				expectedResult: data{Key1: "value"},
+				err:            true,
+			}, // 3
+			{
+				jsonData:       map[string]interface{}{"key1": "value", "key2": nil},
+				expectedResult: data{Key1: "value"},
+			}, // 4
+		} {
+			By(fmt.Sprintf("testing %d case, jsonData: %v", i, tc.jsonData))
+			var out data
+
+			Expect(MarshalUnmarshalJSON(tc.jsonData, &out) != nil).To(Equal(tc.err))
+			Expect(out).To(Equal(tc.expectedResult))
+		}
+	})
+})
