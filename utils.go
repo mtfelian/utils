@@ -733,6 +733,15 @@ func MarshalUnmarshalJSON(data, out interface{}) error {
 	return json.Unmarshal(b, &out)
 }
 
+// MushMarshalJSON works as json.Marshal, but panics on error
+func MushMarshalJSON(data interface{}) []byte {
+	b, err := json.Marshal(data)
+	if err != nil {
+		panic(err)
+	}
+	return b
+}
+
 // SubstringBetween returns a substring between substrs l and r from source string s
 func SubstringBetween(s, l, r string) string {
 	i := strings.Index(s, l)
