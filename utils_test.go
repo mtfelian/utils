@@ -6,6 +6,7 @@ import (
 	"math"
 	"os"
 	"path/filepath"
+	"reflect"
 	"sort"
 	"time"
 
@@ -606,6 +607,40 @@ var _ = Describe("RemoveDuplicates func", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(hadNaN).To(BeFalse())
 			Expect(result.([]string)).To(Equal(tc.expectedResult))
+		}
+	})
+
+	It("works for struct", func() {
+		type testStruct struct {
+			I int
+			S string
+		}
+		testCases := []struct {
+			slice          []testStruct
+			expectedResult []testStruct
+		}{
+			{slice: []testStruct{},
+				expectedResult: []testStruct{}}, // 0
+			{slice: []testStruct{{I: 1, S: "1"}},
+				expectedResult: []testStruct{{I: 1, S: "1"}}}, // 1
+			{slice: []testStruct{{I: 1, S: "1"}, {I: 2, S: "2"}},
+				expectedResult: []testStruct{{I: 1, S: "1"}, {I: 2, S: "2"}}},
+			{slice: []testStruct{{I: 2, S: "2"}, {I: 2, S: "2"}}, // 2
+				expectedResult: []testStruct{{I: 2, S: "2"}}},
+			{slice: []testStruct{{I: 2, S: "2"}, {I: 2, S: "2 "}, {I: 2, S: " 2"}}, // 3
+				expectedResult: []testStruct{{I: 2, S: "2"}, {I: 2, S: "2 "}, {I: 2, S: " 2"}}},
+			{slice: []testStruct{{I: 3, S: "3"}, {I: 2, S: "2"}, {I: 2, S: "2"}, {I: 3, S: "3"}, {I: 2, S: "2"}}, // 4
+				expectedResult: []testStruct{{I: 3, S: "3"}, {I: 2, S: "2"}}}, // 5
+			{slice: []testStruct{{I: 2, S: "2"}, {I: 3, S: "3"}, {I: 3, S: "3"}, {I: 2, S: "2"}, {I: 3, S: "3"}},
+				expectedResult: []testStruct{{I: 2, S: "2"}, {I: 3, S: "3"}}}, // 6
+		}
+		for i, tc := range testCases {
+			By(fmt.Sprintf("testing %d case, slice: %v", i, tc.slice))
+			result, hadNaN, err := RemoveDuplicates(tc.slice)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(hadNaN).To(BeFalse())
+			typedResult := result.([]testStruct)
+			Expect(reflect.DeepEqual(typedResult, tc.expectedResult)).To(BeTrue())
 		}
 	})
 })
