@@ -679,11 +679,22 @@ var _ = Describe("MarshalUnmarshalJSON func", func() {
 				expectedResult: data{Key1: "value"},
 			}, // 4
 		} {
-			By(fmt.Sprintf("testing %d case, jsonData: %v", i, tc.jsonData))
-			var out data
+			By(fmt.Sprintf("testing MarshalUnmarshalJSON %d case, jsonData: %v", i, tc.jsonData), func() {
+				var out data
+				Expect(MarshalUnmarshalJSON(tc.jsonData, &out) != nil).To(Equal(tc.err))
+				Expect(out).To(Equal(tc.expectedResult))
+			})
+			By(fmt.Sprintf("testing MarshalUnmarshalJSON %d case, jsonData: %v", i, tc.jsonData), func() {
+				var out data
+				panicExpectation := Expect(func() { MustMarshalUnmarshalJSON(tc.jsonData, &out) })
+				if tc.err {
+					panicExpectation.Should(Panic())
+				} else {
+					panicExpectation.ShouldNot(Panic())
+				}
+				Expect(out).To(Equal(tc.expectedResult))
+			})
 
-			Expect(MarshalUnmarshalJSON(tc.jsonData, &out) != nil).To(Equal(tc.err))
-			Expect(out).To(Equal(tc.expectedResult))
 		}
 	})
 })

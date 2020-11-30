@@ -733,6 +733,13 @@ func MarshalUnmarshalJSON(data, out interface{}) error {
 	return json.Unmarshal(b, &out)
 }
 
+// MustMarshalUnmarshalJSON works like MarshalUnmarshalJSON but panic on error
+func MustMarshalUnmarshalJSON(data, out interface{}) {
+	if err := MarshalUnmarshalJSON(data, out); err != nil {
+		panic(err)
+	}
+}
+
 // MushMarshalJSON works as json.Marshal, but panics on error
 func MushMarshalJSON(data interface{}) []byte {
 	b, err := json.Marshal(data)
