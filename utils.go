@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"math"
 	"math/rand"
 	"mime/multipart"
@@ -24,6 +25,11 @@ import (
 
 	"github.com/mtfelian/validation"
 	"golang.org/x/text/encoding/charmap"
+)
+
+// erorrs
+var (
+	ErrorNotADirectory = errors.New("not a directory")
 )
 
 func init() {
@@ -312,7 +318,7 @@ func FileSize(path string) int64 {
 	return fileInfo.Size()
 }
 
-// IsDir возвращает true если указанный путь является директорией, иначе false
+// IsDir returns true if the path specified is a directory
 func IsDir(path string) (bool, error) {
 	if !FileExists(path) {
 		return false, errors.New("Файл не существует")
@@ -322,6 +328,19 @@ func IsDir(path string) (bool, error) {
 		return false, err
 	}
 	return fi.IsDir(), nil
+}
+
+// IsEmptyDir returns true if the path specified is an empty directory
+func IsEmptyDir(path string) (bool, error) {
+	isDir, err := IsDir(path)
+	if err != nil {
+		return false, err
+	}
+	if !isDir {
+		return false, ErrorNotADirectory
+	}
+	files, err := ioutil.ReadDir(path)
+	return len(files) == 0, err
 }
 
 // EncodeToWindows1251 перекодирует срез байт b из стандартной Go кодировки UTF-8

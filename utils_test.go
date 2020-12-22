@@ -163,6 +163,51 @@ var _ = Describe("Testing with Ginkgo", func() {
 		})
 	})
 
+	Context("IsEmptyDir()", func() {
+		It("should be false", func() {
+			binPath := MustSelfPath()
+
+			dirName := filepath.Join(binPath, "testDir")
+			defer os.RemoveAll(dirName)
+			Expect(os.Mkdir(dirName, 0777)).To(Succeed())
+
+			fileName := filepath.Join(dirName, "test.txt")
+			Expect(ioutil.WriteFile(fileName, []byte("test"), 0660)).To(Succeed())
+
+			isEmptyDir, err := IsEmptyDir(dirName)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(isEmptyDir).To(BeFalse())
+		})
+
+		It("should be false with error (not a directory)", func() {
+			binPath := MustSelfPath()
+
+			dirName := filepath.Join(binPath, "testDir")
+			defer os.RemoveAll(dirName)
+			Expect(os.Mkdir(dirName, 0777)).To(Succeed())
+
+			fileName := filepath.Join(dirName, "test.txt")
+			Expect(ioutil.WriteFile(fileName, []byte("test"), 0660)).To(Succeed())
+
+			isEmptyDir, err := IsEmptyDir(fileName)
+			Expect(err).To(HaveOccurred())
+			Expect(err).To(Equal(ErrorNotADirectory))
+			Expect(isEmptyDir).To(BeFalse())
+		})
+
+		It("should be true", func() {
+			binPath := MustSelfPath()
+
+			dirName := filepath.Join(binPath, "testDir")
+			defer os.RemoveAll(dirName)
+			Expect(os.Mkdir(dirName, 0777)).To(Succeed())
+
+			isEmptyDir, err := IsEmptyDir(dirName)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(isEmptyDir).To(BeTrue())
+		})
+	})
+
 	It("checks EncodeToWindows1251", func() {
 		str := "Я проверяю tochno"
 		strToWindows1251, err := EncodeToWindows1251([]byte(str))
